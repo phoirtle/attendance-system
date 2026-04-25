@@ -18,3 +18,9 @@ yarn-error.log
 /.idea
 /.nova
 /.vscode
+/storage/*.key
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/storage/logs/*
