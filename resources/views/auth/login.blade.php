@@ -10,7 +10,6 @@
         display: flex;
         width: 100vw;
         min-height: 100vh;
-        background: linear-gradient(135deg, #E86975 0%, #EED7C8 45%, #FFF9F5 75%, #EFAAB0 100%);
     }
 
     .login-left {
