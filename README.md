@@ -72,11 +72,6 @@ touch database/database.sqlite
 php artisan migrate --seed
 ```
 
-Seeder creates:
-- **Admin**: `admin@heartstrings.id` / `password`
-- **Users**: `sari@heartstrings.id`, `budi@heartstrings.id`, etc. / `password`
-- 30 days of mock attendance data
-
 ### 4. Storage Link
 
 ```bash
@@ -248,33 +243,3 @@ tailwind.config = {
 | backdrop-filter (glass) | Chrome 76+, Firefox 103+, Safari 9+ |
 
 > **Important**: GPS and Camera require **HTTPS** in production. Use `php artisan serve` locally (localhost is exempt).
-
----
-
-## 🚢 Production Checklist
-
-```bash
-# 1. Set environment
-APP_ENV=production
-APP_DEBUG=false
-
-# 2. Optimize
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-
-# 3. Storage
-php artisan storage:link
-
-# 4. Ensure HTTPS (required for GPS + camera)
-# Configure Nginx/Apache with SSL cert
-
-# 5. Queue (for future email notifications)
-php artisan queue:work
-```
-
----
-
-## 📄 License
-
-MIT © Heartstrings — vintage lace · ruby amour · blush bloom
