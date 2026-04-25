@@ -25,8 +25,8 @@
         {{-- Glass card --}}
         <div class="glass-strong panel fade-in delay-1">
 
-            <h2 style="font-size:1.5rem;font-weight:700;color:#3d1a22;margin:0 0 8px;">Welcome back</h2>
-            <p style="color:rgba(107,34,50,0.55);font-size:0.875rem;margin:0 0 26px;">Sign in to your account</p>
+            <h2 style="font-size:1.5rem;font-weight:700;color:#3d1a22;margin:0 0 8px;text-align:center;">Welcome back</h2>
+            <p style="color:rgba(107,34,50,0.55);font-size:0.875rem;margin:0 0 26px;text-align:center;">Sign in to your account</p>
 
             @if($errors->any())
             <div class="flash flash-error fade-in">
@@ -91,9 +91,9 @@
             </form>
         </div>
 
-        {{-- Sub-brand --}}
-        <p style="text-align:center;margin-top:20px;font-size:0.78rem;color:rgba(107,34,50,0.45);font-style:italic;">
-            vintage lace · ruby amour · blush bloom
+        {{-- Footer --}}
+        <p style="text-align:center;margin-top:20px;font-size:0.78rem;color:rgba(107,34,50,0.45);">
+            © 2026 Heartstrings. All rights reserved.
         </p>
     </div>
 </div>
