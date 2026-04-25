@@ -42,8 +42,8 @@
                 @endphp
                 <div style="position:relative;width:130px;height:130px;flex-shrink:0;">
                     <svg width="130" height="130" viewBox="0 0 100 100" style="transform:rotate(-90deg);">
-                        <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(127,5,21,0.15)" stroke-width="10"/>
-                        <circle cx="50" cy="50" r="42" fill="none" stroke="#7f0515" stroke-width="10"
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(61,26,34,0.15)" stroke-width="10"/>
+                        <circle cx="50" cy="50" r="42" fill="none" stroke="#BE0822" stroke-width="10"
                                 stroke-dasharray="{{ $dash }} {{ $gap }}"
                                 stroke-linecap="round"
                                 style="transition:stroke-dasharray 1s ease;"/>
@@ -64,7 +64,7 @@
                     </div>
                     <div>
                         <div style="display:flex;align-items:center;gap:7px;margin-bottom:2px;">
-                            <div style="width:10px;height:10px;border-radius:50%;background:#7f0515;"></div>
+                            <div style="width:10px;height:10px;border-radius:50%;background:#BE0822;"></div>
                             <span style="font-size:0.78rem;color:#3d1a22;font-weight:500;">Absent</span>
                         </div>
                         <div style="font-size:1.1rem;font-weight:700;color:#3d1a22;padding-left:17px;">{{ $absentToday }}</div>
@@ -91,7 +91,10 @@
         <div class="glass-strong panel fade-in delay-2" style="background:rgba(255,255,255,0.50);padding-top:36px;">
             <div style="font-size:0.85rem;font-weight:600;color:#3d1a22;margin-bottom:20px;">Late Clock-ins — This Week</div>
 
-            @php $maxLate = max(max(array_column($lateByDay, 'count') ?: [0]), 1); @endphp
+            @php
+                $counts = array_column($lateByDay, 'count');
+                $maxLate = empty($counts) ? 1 : max($counts);
+            @endphp
             <div style="display:flex;align-items:flex-end;gap:8px;height:160px;padding-bottom:28px;position:relative;margin-top:40px;">
                 @foreach($lateByDay as $day)
                 @php $h = $maxLate > 0 ? max(4, round($day['count'] / $maxLate * 90)) : 4; @endphp
