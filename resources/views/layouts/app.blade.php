@@ -108,7 +108,7 @@
             letter-spacing: 0.01em;
             white-space: nowrap;
         }
-        .nav-link:hover {
+    .nav-link:hover {
             background: rgba(190,8,34,0.10);
             color: #BE0822;
         }
@@ -116,6 +116,13 @@
             background: #BE0822;
             color: #fff;
             box-shadow: 0 2px 12px rgba(190,8,34,0.35);
+        }
+        .nav-link img {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
         }
         .nav-divider { width: 1px; height: 22px; background: rgba(190,8,34,0.15); margin: 0 4px; }
 
@@ -344,9 +351,8 @@
     {{-- Profile --}}
     <a href="{{ route('profile.show') }}"
        class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
-        @if(auth()->user()->photo_path)
-            <img src="{{ asset('storage/' . auth()->user()->photo_path) }}" alt=""
-                 style="width:22px;height:22px;border-radius:50%;object-fit:cover;">
+    @if(auth()->user()->photo_path)
+            <img src="{{ asset('storage/' . auth()->user()->photo_path) }}" alt="">
         @else
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         @endif
