@@ -1,0 +1,245 @@
+/*
+ | Heartstrings Attendance System — Global CSS
+ | Compiled via Vite + Tailwind CSS
+ | All glassmorphism utilities are defined here as @layer components
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Custom Properties ───────────────────────────────────────── */
+:root {
+    --ruby:   #BE0822;
+    --rose:   #E86975;
+    --pink:   #EFAAB0;
+    --cream:  #EED7C8;
+    --ivory:  #FFF9F5;
+    --coral:  #FD9898;
+
+    --text-primary:   #3d1a22;
+    --text-secondary: rgba(107, 34, 50, 0.60);
+    --text-muted:     rgba(107, 34, 50, 0.40);
+
+    --glass-bg:       rgba(255, 255, 255, 0.28);
+    --glass-bg-strong: rgba(255, 255, 255, 0.45);
+    --glass-border:   rgba(255, 255, 255, 0.45);
+    --glass-blur:     blur(18px) saturate(160%);
+
+    --shadow-sm:   0 4px 16px rgba(190, 8, 34, 0.10);
+    --shadow-md:   0 8px 32px rgba(190, 8, 34, 0.14);
+    --shadow-lg:   0 16px 48px rgba(190, 8, 34, 0.18);
+}
+
+/* ── Base ────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'DM Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    color: var(--text-primary);
+    min-height: 100vh;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(135deg, #E86975 0%, #EED7C8 40%, #FFF9F5 70%, #FD9898 100%);
+}
+
+/* ── Glassmorphism Components ────────────────────────────────────── */
+@layer components {
+
+    .glass {
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--glass-border);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .glass-strong {
+        background: var(--glass-bg-strong);
+        backdrop-filter: blur(28px) saturate(180%);
+        -webkit-backdrop-filter: blur(28px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.60);
+        box-shadow: var(--shadow-md);
+    }
+
+    .glass-dark {
+        background: rgba(190, 8, 34, 0.18);
+        backdrop-filter: blur(20px) saturate(160%);
+        -webkit-backdrop-filter: blur(20px) saturate(160%);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Navbar */
+    .navbar-glass {
+        background: rgba(255, 255, 255, 0.38);
+        backdrop-filter: blur(32px) saturate(200%);
+        -webkit-backdrop-filter: blur(32px) saturate(200%);
+        border: 1px solid rgba(255, 255, 255, 0.65);
+        box-shadow: 0 4px 32px rgba(190, 8, 34, 0.12), 0 1px 4px rgba(0, 0, 0, 0.06);
+        border-radius: 50px;
+    }
+
+    /* Inputs */
+    .input-glass {
+        @apply w-full px-4 py-3 rounded-xl text-sm font-normal outline-none transition-all duration-200;
+        background: rgba(255, 255, 255, 0.55);
+        border: 1.5px solid rgba(255, 255, 255, 0.75);
+        color: var(--text-primary);
+        font-family: inherit;
+    }
+    .input-glass::placeholder { color: var(--text-muted); }
+    .input-glass:focus {
+        background: rgba(255, 255, 255, 0.78);
+        border-color: rgba(190, 8, 34, 0.40);
+        box-shadow: 0 0 0 3px rgba(190, 8, 34, 0.10);
+    }
+
+    /* Primary button */
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white cursor-pointer transition-all duration-200;
+        background: linear-gradient(135deg, #BE0822 0%, #E86975 100%);
+        border: none;
+        font-family: inherit;
+        letter-spacing: 0.02em;
+        box-shadow: 0 4px 20px rgba(190, 8, 34, 0.32);
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(190, 8, 34, 0.44);
+    }
+    .btn-primary:active  { transform: translateY(0); }
+    .btn-primary:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    /* Outline button */
+    .btn-outline {
+        @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium cursor-pointer transition-all duration-200;
+        background: rgba(255, 255, 255, 0.45);
+        border: 1.5px solid rgba(190, 8, 34, 0.28);
+        color: var(--ruby);
+        font-family: inherit;
+    }
+    .btn-outline:hover {
+        background: rgba(190, 8, 34, 0.08);
+        border-color: var(--ruby);
+    }
+
+    /* Panel / Card */
+    .panel {
+        @apply rounded-3xl p-7 relative overflow-hidden;
+    }
+
+    /* Badges */
+    .badge {
+        @apply inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-xs font-semibold;
+        letter-spacing: 0.03em;
+    }
+    .badge-success {
+        background: rgba(22, 163, 74, 0.14);
+        color: #15803d;
+        border: 1px solid rgba(22, 163, 74, 0.25);
+    }
+    .badge-warning {
+        background: rgba(234, 179, 8, 0.14);
+        color: #92400e;
+        border: 1px solid rgba(234, 179, 8, 0.25);
+    }
+    .badge-danger {
+        background: rgba(190, 8, 34, 0.12);
+        color: #BE0822;
+        border: 1px solid rgba(190, 8, 34, 0.22);
+    }
+    .badge-info {
+        background: rgba(59, 130, 246, 0.12);
+        color: #1d4ed8;
+        border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    /* Data table */
+    .data-table { @apply w-full border-collapse; }
+    .data-table thead th {
+        @apply text-left px-3.5 py-2.5 text-xs font-bold uppercase tracking-widest;
+        background: rgba(190, 8, 34, 0.07);
+        color: var(--text-secondary);
+    }
+    .data-table thead th:first-child { border-radius: 10px 0 0 10px; }
+    .data-table thead th:last-child  { border-radius: 0 10px 10px 0; }
+    .data-table tbody td {
+        @apply px-3.5 py-2.5 text-sm;
+        color: var(--text-primary);
+        border-bottom: 1px solid rgba(190, 8, 34, 0.06);
+    }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover td { background: rgba(255, 255, 255, 0.35); }
+
+    /* Flash messages */
+    .flash { @apply px-4 py-3 rounded-xl text-sm font-medium mb-4; }
+    .flash-success {
+        background: rgba(22, 163, 74, 0.12);
+        color: #15803d;
+        border: 1px solid rgba(22, 163, 74, 0.25);
+    }
+    .flash-error {
+        background: rgba(190, 8, 34, 0.10);
+        color: #BE0822;
+        border: 1px solid rgba(190, 8, 34, 0.22);
+    }
+}
+
+/* ── Animations ──────────────────────────────────────────────────── */
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-gps {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%       { transform: scale(1.6); opacity: 0; }
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+.fade-in   { animation: fadeSlideUp 0.4s ease both; }
+.delay-1   { animation-delay: 0.08s; }
+.delay-2   { animation-delay: 0.16s; }
+.delay-3   { animation-delay: 0.24s; }
+.delay-4   { animation-delay: 0.32s; }
+.delay-5   { animation-delay: 0.40s; }
+.delay-6   { animation-delay: 0.48s; }
+.animate-spin-slow { animation: spin 2s linear infinite; }
+
+/* ── Scrollbar ───────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(190, 8, 34, 0.22); border-radius: 3px; }
+
+/* ── Page wrapper ────────────────────────────────────────────────── */
+.page-wrapper { padding-top: 88px; min-height: 100vh; }
+
+/* ── Typography ──────────────────────────────────────────────────── */
+.display-font { font-family: 'Playfair Display', Georgia, serif; }
+.brand-watermark {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    color: rgba(190, 8, 34, 0.10);
+    font-size: 3.5rem;
+    font-weight: 400;
+    pointer-events: none;
+    user-select: none;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}

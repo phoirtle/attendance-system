@@ -1,0 +1,21 @@
+[program:heartstrings-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/heartstrings/artisan queue:work database --sleep=3 --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=2
+redirect_stderr=true
+stdout_logfile=/var/www/heartstrings/storage/logs/worker.log
+stopwaitsecs=3600
+
+[program:heartstrings-scheduler]
+process_name=%(program_name)s
+command=/bin/bash -c "while true; do php /var/www/heartstrings/artisan schedule:run >> /dev/null 2>&1; sleep 60; done"
+autostart=true
+autorestart=true
+user=www-data
+redirect_stderr=true
+stdout_logfile=/var/www/heartstrings/storage/logs/scheduler.log
