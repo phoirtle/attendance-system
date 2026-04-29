@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PayrollController;
 
 // ── Public ──────────────────────────────────────────────────────────────────
 Route::get('/', fn() => redirect()->route('login'));
@@ -36,6 +37,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/details',      [ProfileController::class, 'updateDetails'])->name('profile.details.update');
     Route::get('/profile/activity',      [ProfileController::class, 'activity'])->name('profile.activity');
 
+    // My Salary (employee)
+    Route::get('/my-salary',              [PayrollController::class, 'mySalary'])->name('salary.index');
+    Route::get('/my-salary/{payroll}',    [PayrollController::class, 'mySalaryShow'])->name('salary.show');
+    Route::get('/my-salary/{payroll}/print', [PayrollController::class, 'mySalaryPrint'])->name('salary.print');
+
     // ── Admin only ──────────────────────────────────────────────────────────
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard',       [AttendanceController::class, 'adminDashboard'])->name('dashboard');
@@ -54,5 +60,21 @@ Route::middleware('auth')->group(function () {
         Route::get('/leaves',          [AttendanceController::class, 'adminLeaves'])->name('leaves');
         Route::post('/leaves/{leave}/approve', [AttendanceController::class, 'approveLeave'])->name('leaves.approve');
         Route::post('/leaves/{leave}/reject',  [AttendanceController::class, 'rejectLeave'])->name('leaves.reject');
+
+        // Salary Positions
+        Route::get('/salary-positions',              [PayrollController::class, 'salaryPositionsIndex'])->name('salary-positions.index');
+        Route::get('/salary-positions/create',       [PayrollController::class, 'salaryPositionsCreate'])->name('salary-positions.create');
+        Route::post('/salary-positions',             [PayrollController::class, 'salaryPositionsStore'])->name('salary-positions.store');
+        Route::get('/salary-positions/{salaryPosition}/edit', [PayrollController::class, 'salaryPositionsEdit'])->name('salary-positions.edit');
+        Route::put('/salary-positions/{salaryPosition}',      [PayrollController::class, 'salaryPositionsUpdate'])->name('salary-positions.update');
+        Route::delete('/salary-positions/{salaryPosition}',   [PayrollController::class, 'salaryPositionsDestroy'])->name('salary-positions.destroy');
+
+        // Payrolls
+        Route::get('/payrolls',              [PayrollController::class, 'payrollIndex'])->name('payrolls.index');
+        Route::post('/payrolls/generate',    [PayrollController::class, 'payrollGenerate'])->name('payrolls.generate');
+        Route::get('/payrolls/{payroll}',    [PayrollController::class, 'payrollShow'])->name('payrolls.show');
+        Route::get('/payrolls/{payroll}/print', [PayrollController::class, 'payrollPrint'])->name('payrolls.print');
+        Route::get('/payrolls-recap',        [PayrollController::class, 'payrollRecap'])->name('payrolls.recap');
     });
 });
+
