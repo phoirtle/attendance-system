@@ -11,7 +11,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'department', 'photo_path', 'session_id',
+        'name', 'email', 'password', 'role', 'department', 'photo_path', 'session_id', 'salary_position_id',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -44,6 +44,16 @@ class User extends Authenticatable
         return $this->hasMany(Leave::class);
     }
 
+    public function salaryPosition()
+    {
+        return $this->belongsTo(SalaryPosition::class);
+    }
+
+    public function payrolls()
+    {
+        return $this->hasMany(Payroll::class, 'employee_id');
+    }
+
     public function todayAttendance()
     {
         return $this->attendances()->whereDate('date', today())->first();
@@ -72,3 +82,4 @@ class User extends Authenticatable
             ->exists();
     }
 }
+

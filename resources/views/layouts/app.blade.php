@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="office-latitude" content="{{ env('OFFICE_LATITUDE', -2.985) }}">
+    <meta name="office-longitude" content="{{ env('OFFICE_LONGITUDE', 104.732) }}">
+    <meta name="office-radius" content="{{ env('OFFICE_RADIUS_METERS', 100) }}">
     <title>@yield('title', 'Heartstrings — Attendance') </title>
 
     {{-- Google Fonts: DM Sans + Playfair Display --}}
@@ -328,6 +331,15 @@
     </a>
     @endif
 
+    {{-- Salary (admin) --}}
+    @if(auth()->user()->isAdmin())
+    <a href="{{ route('admin.salary-positions.index') }}"
+       class="nav-link {{ request()->routeIs('admin.salary-positions*') || request()->routeIs('admin.payrolls*') ? 'active' : '' }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Salary
+    </a>
+    @endif
+
     {{-- Staff Overview (admin) --}}
     @if(auth()->user()->isAdmin())
     <a href="{{ route('admin.users.index') }}"
@@ -343,6 +355,15 @@
        class="nav-link {{ request()->routeIs('admin.leaves') ? 'active' : '' }}">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         Leaves
+    </a>
+    @endif
+
+    {{-- My Salary (user) --}}
+    @if(auth()->user()->isUser())
+    <a href="{{ route('salary.index') }}"
+       class="nav-link {{ request()->routeIs('salary*') ? 'active' : '' }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        My Salary
     </a>
     @endif
 

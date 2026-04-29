@@ -1,15 +1,45 @@
-# TODO: Implementasi Fitur Baru
+# TODO: Fitur Manajemen Gaji
 
-## Fitur 1: Hanya Admin yang Bisa Edit Detail Akun
-- [x] Ubah ProfileController - block user edit details
-- [x] Sembunyikan menu "Personal Details" di profile/show untuk user
-- [x] Update profile/details view untuk user
+## Step 1: Database & Model ✅
+- [x] Migration: add salary_position_id to users table
+- [x] Migration: create salary_positions table
+- [x] Migration: create payrolls table
+- [x] Model: SalaryPosition
+- [x] Model: Payroll
+- [x] Update Model: User (relasi salaryPosition & payrolls)
 
-## Fitur 2: Single Device Login untuk User
-- [x] Buat migration session_id di tabel users
-- [x] Update User model - tambah session_id ke fillable
-- [x] Update AuthController - simpan session_id saat login
-- [x] Buat middleware SingleDeviceLogin
-- [x] Daftarkan middleware di bootstrap/app.php
-- [x] Jalankan migration
+## Step 2: Backend Logic ✅
+- [x] Controller: PayrollController (semua fitur admin & karyawan)
+- [x] Update AppServiceProvider: helper format Rupiah (@rupiah)
+- [x] Update routes/web.php
+
+## Step 3: Views - Admin Salary Positions ✅
+- [x] admin/salary-positions/index.blade.php
+- [x] admin/salary-positions/create.blade.php
+- [x] admin/salary-positions/edit.blade.php
+
+## Step 4: Views - Admin Payroll ✅
+- [x] admin/payrolls/index.blade.php
+- [x] admin/payrolls/show.blade.php
+- [x] admin/payrolls/print.blade.php
+- [x] admin/payrolls/recap.blade.php
+
+## Step 5: Views - Employee Salary ✅
+- [x] salary/index.blade.php
+- [x] salary/show.blade.php
+- [x] salary/print.blade.php
+
+## Step 6: Layout & Integration ✅
+- [x] Update layouts/app.blade.php (navigasi Salary admin + My Salary karyawan)
+
+## Step 7: Testing ✅
+- [x] Jalankan migrate — sukses
+- [x] Verifikasi route dan view — sukses
+
+## Catatan Implementasi
+- Potongan gaji: Rp 50.000 per hari absent tanpa keterangan (sesuai permintaan user)
+- Cuti/izin/sakit tidak dipotong gaji
+- Format mata uang: Rupiah via @rupiah Blade directive
+- PDF Export: halaman print-friendly dengan `window.print()`
+- Grafik rekap: inline SVG bar chart per departemen
 

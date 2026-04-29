@@ -41,10 +41,10 @@
                     <line x1="260" y1="0" x2="260" y2="100%" stroke="#E86975" stroke-width="1.5"/>
                     <line x1="0" y1="160" x2="100%" y2="160" stroke="#E86975" stroke-width="1.5"/>
                 </svg>
-                {{-- 100m radius circle --}}
+                {{-- Radius circle (140px diameter = visual scale for MAX_DIST) --}}
                 <div id="radiusCircle" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:140px;height:140px;border-radius:50%;border:2px solid rgba(190,8,34,0.50);background:rgba(190,8,34,0.07);"></div>
                 {{-- Radius label --}}
-                <div style="position:absolute;top:50%;left:calc(50% + 72px);transform:translateY(-50%);font-size:0.7rem;font-weight:600;color:#BE0822;background:rgba(255,255,255,0.85);padding:2px 8px;border-radius:20px;">100 m</div>
+                <div id="radiusLabel" style="position:absolute;top:50%;left:calc(50% + 72px);transform:translateY(-50%);font-size:0.7rem;font-weight:600;color:#BE0822;background:rgba(255,255,255,0.85);padding:2px 8px;border-radius:20px;">{{ env('OFFICE_RADIUS_METERS', 100) }} m</div>
                 {{-- Pin --}}
                 <div id="locationPin" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-100%);">
                     <svg width="28" height="36" viewBox="0 0 28 36" fill="none">
@@ -176,9 +176,9 @@
 @push('scripts')
 <script>
 // ── Config ───────────────────────────────────────────────────────────────
-const OFFICE_LAT  = -2.985;
-const OFFICE_LNG  = 104.732;
-const MAX_DIST    = 100;
+const OFFICE_LAT  = parseFloat(document.querySelector('meta[name="office-latitude"]').content);
+const OFFICE_LNG  = parseFloat(document.querySelector('meta[name="office-longitude"]').content);
+const MAX_DIST    = parseInt(document.querySelector('meta[name="office-radius"]').content, 10);
 const CSRF        = document.querySelector('meta[name="csrf-token"]').content;
 
 let userLat = null, userLng = null, userDist = null;
@@ -201,6 +201,11 @@ function initGPS() {
         return;
     }
     setGPSStatus('Locating you…', null);
+
+    navigator.geolocation.getCurrentPosition(onGPSSuccess, onGPSError, {
+        enableHighAccuracy: true, maximumAge: 10000, timeout: 15000
+    });
+
     navigator.geolocation.watchPosition(onGPSSuccess, onGPSError, {
         enableHighAccuracy: true, maximumAge: 10000, timeout: 15000
     });
@@ -225,7 +230,34 @@ function onGPSSuccess(pos) {
         inRange
     );
 
+    updateMapPin(userLat, userLng);
     updateClockBtn();
+}
+
+function updateMapPin(lat, lng) {
+    const pin = document.getElementById('locationPin');
+    if (!pin) return;
+
+    // Approximate conversion: 1 deg lat ≈ 111,000 m; 1 deg lng ≈ 111,000 * cos(lat) m
+    const metersPerDegLat = 111000;
+    const metersPerDegLng = 111000 * Math.cos(OFFICE_LAT * Math.PI / 180);
+
+    const dLatM = (lat - OFFICE_LAT) * metersPerDegLat;   // +north
+    const dLngM = (lng - OFFICE_LNG) * metersPerDegLng;   // +east
+
+    // The radius circle is 140px diameter = 70px radius representing MAX_DIST meters.
+    const pxPerMeter = 70 / MAX_DIST;
+
+    const offsetX = dLngM * pxPerMeter;   // east  → right
+    const offsetY = -dLatM * pxPerMeter;  // north → up (negative in CSS top)
+
+    // Clamp to keep pin inside map bounds (±90px from center)
+    const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
+    const clampedX = clamp(offsetX, -90, 90);
+    const clampedY = clamp(offsetY, -90, 90);
+
+    pin.style.left = `calc(50% + ${clampedX}px)`;
+    pin.style.top  = `calc(50% + ${clampedY}px)`;
 }
 
 function onGPSError(err) {
