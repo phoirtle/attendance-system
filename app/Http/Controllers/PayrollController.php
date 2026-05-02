@@ -33,12 +33,12 @@ class PayrollController extends Controller
             'position_name' => ['required', 'string', 'max:255'],
             'department'    => ['nullable', 'string', 'max:255'],
             'base_salary'   => ['required', 'integer', 'min:0'],
-            'allowance'     => ['required', 'integer', 'min:0'],
         ]);
 
-        SalaryPosition::create($request->only('position_name', 'department', 'base_salary', 'allowance'));
+        SalaryPosition::create($request->only('position_name', 'department', 'base_salary'));
 
-        return redirect()->route('admin.salary-positions.index')->with('success', 'Salary position created successfully.');
+        return redirect()->route('admin.salary-positions.index')
+            ->with('success', 'Posisi salary berhasil ditambahkan.');
     }
 
     public function salaryPositionsEdit(SalaryPosition $salaryPosition)
@@ -52,18 +52,19 @@ class PayrollController extends Controller
             'position_name' => ['required', 'string', 'max:255'],
             'department'    => ['nullable', 'string', 'max:255'],
             'base_salary'   => ['required', 'integer', 'min:0'],
-            'allowance'     => ['required', 'integer', 'min:0'],
         ]);
 
-        $salaryPosition->update($request->only('position_name', 'department', 'base_salary', 'allowance'));
+        $salaryPosition->update($request->only('position_name', 'department', 'base_salary'));
 
-        return redirect()->route('admin.salary-positions.index')->with('success', 'Salary position updated successfully.');
+        return redirect()->route('admin.salary-positions.index')
+            ->with('success', 'Posisi salary berhasil diperbarui.');
     }
 
     public function salaryPositionsDestroy(SalaryPosition $salaryPosition)
     {
         $salaryPosition->delete();
-        return redirect()->route('admin.salary-positions.index')->with('success', 'Salary position deleted successfully.');
+        return redirect()->route('admin.salary-positions.index')
+            ->with('success', 'Posisi salary berhasil dihapus.');
     }
 
     /* ================================================================
@@ -72,8 +73,8 @@ class PayrollController extends Controller
 
     public function payrollIndex(Request $request)
     {
-        $month = $request->integer('month', now()->month);
-        $year  = $request->integer('year', now()->year);
+        $month = $request->integer('month', now()->subMonth()->month);
+$year  = $request->integer('year', now()->subMonth()->year);
         $department = $request->input('department');
 
         $query = Payroll::with(['employee', 'salaryPosition'])
@@ -86,8 +87,11 @@ class PayrollController extends Controller
             });
         }
 
-        $payrolls = $query->get();
-        $departments = User::where('role', 'user')->whereNotNull('department')->distinct()->pluck('department');
+        $payrolls    = $query->get();
+        $departments = User::where('role', 'user')
+            ->whereNotNull('department')
+            ->distinct()
+            ->pluck('department');
 
         return view('admin.payrolls.index', compact('payrolls', 'month', 'year', 'department', 'departments'));
     }
@@ -102,34 +106,47 @@ class PayrollController extends Controller
         $month = $request->integer('month');
         $year  = $request->integer('year');
 
-        $users = User::where('role', 'user')->whereNotNull('salary_position_id')->with('salaryPosition')->get();
+        // Blokir generate jika bulan yang dipilih adalah bulan berjalan atau masa depan
+        $selected = Carbon::create($year, $month, 1)->startOfMonth();
+        $current  = Carbon::now()->startOfMonth();
+
+        if ($selected >= $current) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['month' => 'Payroll hanya bisa digenerate setelah periode bulan berakhir. Pilih bulan sebelum ' . $current->translatedFormat('F Y') . '.']);
+        }
+
+        $users = User::where('role', 'user')
+            ->whereNotNull('salary_position_id')
+            ->with('salaryPosition')
+            ->get();
 
         $generated = 0;
         foreach ($users as $user) {
+            $position = $user->salaryPosition;
+            if (!$position) continue;
+
+            $calc = $this->calculatePayroll($user, $position, $month, $year);
+
             $payroll = Payroll::firstOrNew([
                 'employee_id' => $user->id,
                 'month'       => $month,
                 'year'        => $year,
             ]);
 
-            $position = $user->salaryPosition;
-            if (!$position) continue;
-
-            $calc = $this->calculatePayroll($user, $position, $month, $year);
-
-            $payroll->salary_position_id   = $position->id;
-            $payroll->base_salary          = $calc['base_salary'];
-            $payroll->attendance_allowance = $calc['attendance_allowance'];
-            $payroll->deduction            = $calc['deduction'];
-            $payroll->total_salary         = $calc['total_salary'];
-            $payroll->status               = 'finalized';
+            $payroll->salary_position_id = $position->id;
+            $payroll->base_salary        = $calc['base_salary'];
+            $payroll->alpha              = $calc['alpha'];
+            $payroll->deduction          = $calc['deduction'];
+            $payroll->total_salary       = $calc['total_salary'];
+            $payroll->status             = 'finalized';
             $payroll->save();
 
             $generated++;
         }
 
         return redirect()->route('admin.payrolls.index', ['month' => $month, 'year' => $year])
-            ->with('success', "Generated {$generated} payroll slips for " . Carbon::create($year, $month)->format('F Y'));
+            ->with('success', "Berhasil generate {$generated} slip gaji untuk " . Carbon::create($year, $month)->translatedFormat('F Y') . '.');
     }
 
     public function payrollShow(Payroll $payroll)
@@ -165,8 +182,8 @@ class PayrollController extends Controller
         // Group by department
         $byDepartment = [];
         foreach ($payrolls as $p) {
-            $dept = $p->employee->department ?? 'No Department';
-            $byDepartment[$dept] = ($byDepartment[$dept] ?? 0) + $p->total_salary;
+            $dept                  = $p->employee->department ?? 'Tanpa Departemen';
+            $byDepartment[$dept]   = ($byDepartment[$dept] ?? 0) + $p->total_salary;
         }
 
         return view('admin.payrolls.recap', compact('payrolls', 'month', 'year', 'totalExpense', 'byDepartment'));
@@ -178,14 +195,14 @@ class PayrollController extends Controller
 
     public function mySalary(Request $request)
     {
-        $user = auth()->user();
+        $user  = auth()->user();
         $month = $request->integer('month', now()->month);
         $year  = $request->integer('year', now()->year);
 
         $payrolls = $user->payrolls()
             ->with('salaryPosition')
             ->when($request->filled('month'), fn($q) => $q->where('month', $month))
-            ->when($request->filled('year'), fn($q) => $q->where('year', $year))
+            ->when($request->filled('year'),  fn($q) => $q->where('year', $year))
             ->orderBy('year', 'desc')
             ->orderBy('month', 'desc')
             ->get();
@@ -221,23 +238,23 @@ class PayrollController extends Controller
     {
         if (!$position) {
             return [
-                'base_salary'          => 0,
-                'attendance_allowance' => 0,
-                'deduction'            => 0,
-                'total_salary'         => 0,
-                'work_days'            => 0,
-                'present_days'         => 0,
-                'late_days'            => 0,
-                'absent_days'          => 0,
-                'leave_days'           => 0,
+                'base_salary'  => 0,
+                'alpha'        => 0,
+                'deduction'    => 0,
+                'total_salary' => 0,
+                'work_days'    => 0,
+                'present_days' => 0,
+                'late_days'    => 0,
+                'absent_days'  => 0,
+                'leave_days'   => 0,
             ];
         }
 
         $start = Carbon::create($year, $month, 1)->startOfMonth();
         $end   = $start->copy()->endOfMonth();
 
-        // Count work days (Mon-Sat, excluding Sunday)
-        $period = CarbonPeriod::create($start, $end);
+        // Hitung hari kerja (Senin–Sabtu, tidak termasuk Minggu)
+        $period   = CarbonPeriod::create($start, $end);
         $workDays = 0;
         foreach ($period as $date) {
             if ($date->dayOfWeek !== Carbon::SUNDAY) {
@@ -245,55 +262,51 @@ class PayrollController extends Controller
             }
         }
 
-        // Attendance summary
+        // Rekap kehadiran dari tabel attendance
         $attendances = Attendance::where('user_id', $user->id)
             ->whereMonth('date', $month)
             ->whereYear('date', $year)
             ->get();
 
-        $presentDays = $attendances->whereIn('status', ['present'])->count();
-        $lateDays    = $attendances->where('status', 'late')->count();
-        $absentDays  = $attendances->where('status', 'absent')->count();
-        $leaveDays   = $attendances->where('status', 'leave')->count();
+       $presentDays = $attendances->where('status', 'present')->count();
+$lateDays    = $attendances->where('status', 'late')->count();
+$absentDays  = $attendances->where('status', 'absent')->count();
+$leaveDays   = $attendances->where('status', 'leave')->count();
+$alphaDays   = $attendances->where('status', 'alpha')->count(); // tambah ini
+        // Hari kerja yang tidak ada record → cek apakah ada cuti disetujui, jika tidak = alpha
+        $recordedDates = $attendances->pluck('date')
+            ->map(fn($d) => $d->format('Y-m-d'))
+            ->toArray();
 
-        // If no attendance record for a work day, count as absent
-        $recordedDates = $attendances->pluck('date')->map(fn($d) => $d->format('Y-m-d'))->toArray();
         foreach ($period as $date) {
-            if ($date->dayOfWeek === Carbon::SUNDAY) continue;
-            $dStr = $date->format('Y-m-d');
-            if (!in_array($dStr, $recordedDates)) {
-                // Check approved leave
-                if ($user->hasApprovedLeaveForDate($date)) {
-                    $leaveDays++;
-                } else {
-                    $absentDays++;
-                }
-            }
+    if ($date->dayOfWeek === Carbon::SUNDAY) continue;
+    $dStr = $date->format('Y-m-d');
+    if (!in_array($dStr, $recordedDates)) {
+        if ($user->hasApprovedLeaveForDate($date)) {
+            $leaveDays++;
+        } else {
+            $alphaDays++; // hari tidak ada record sama sekali juga alpha
+            $absentDays++;
         }
-
-        $hadirDays = $presentDays + $lateDays;
-
-        // Attendance allowance pro-rata
-        $attendanceAllowance = $workDays > 0
-            ? round($position->allowance * ($hadirDays / $workDays))
-            : 0;
-
-        // Deduction: only absent without reason = Rp 50.000 per day
-        $deduction = $absentDays * 50000;
-
-        $total = $position->base_salary + $attendanceAllowance - $deduction;
-
-        return [
-            'base_salary'          => $position->base_salary,
-            'attendance_allowance' => $attendanceAllowance,
-            'deduction'            => $deduction,
-            'total_salary'         => max(0, $total),
-            'work_days'            => $workDays,
-            'present_days'         => $presentDays,
-            'late_days'            => $lateDays,
-            'absent_days'          => $absentDays,
-            'leave_days'           => $leaveDays,
-        ];
     }
 }
 
+  // Potongan = Rp 50.000 per hari alpha
+$deduction = $alphaDays * 50000;
+
+// Total gaji = gaji pokok - potongan
+$total = $position->base_salary - $deduction;
+
+        return [
+            'base_salary'  => $position->base_salary,
+            'alpha'        => $alphaDays,
+            'deduction'    => $deduction,
+            'total_salary' => max(0, $total),
+            'work_days'    => $workDays,
+            'present_days' => $presentDays,
+            'late_days'    => $lateDays,
+            'absent_days'  => $absentDays,
+            'leave_days'   => $leaveDays,
+        ];
+    }
+}

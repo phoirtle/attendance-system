@@ -43,9 +43,9 @@
             <td>Base Salary</td>
             <td>Rp {{ number_format($payroll->base_salary, 0, ',', '.') }}</td>
         </tr>
-        <tr>
-            <td>Attendance Allowance</td>
-            <td style="color:#15803d;">+ Rp {{ number_format($payroll->attendance_allowance, 0, ',', '.') }}</td>
+<tr>
+            <td>Alpha (Hari Tidak Hadir)</td>
+            <td style="color:#BE0822;">{{ $payroll->alpha }} hari</td>
         </tr>
         <tr>
             <td>Deduction (Absent: {{ $calc['absent_days'] }} days × Rp 50.000)</td>

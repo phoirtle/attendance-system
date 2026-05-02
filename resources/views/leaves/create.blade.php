@@ -10,7 +10,10 @@
             Back to My Leaves
         </a>
         <h1 style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:600;color:#3d1a22;margin:0;letter-spacing:-0.02em;">Request <em>Leave</em></h1>
-        <p style="font-size:0.85rem;color:rgba(107,34,50,0.55);margin-top:6px;">Remaining quota: <strong>{{ auth()->user()->remainingLeaveDays() }} / 12 days</strong></p>
+        {{-- Quota info hanya tampil saat Annual Leave dipilih (diatur via JS) --}}
+        <p id="quotaInfo" style="font-size:0.85rem;color:rgba(107,34,50,0.55);margin-top:6px;display:none;">
+            Remaining annual leave quota: <strong>{{ auth()->user()->remainingLeaveDays() }} / 12 days</strong>
+        </p>
     </div>
 
     <div class="glass-strong panel fade-in delay-1">
@@ -19,7 +22,7 @@
 
             <div style="margin-bottom:16px;">
                 <label style="display:block;font-size:0.78rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#6b2232;margin-bottom:7px;">Leave Type</label>
-                <select name="type" id="leaveType" class="input-glass" required onchange="toggleDocumentField()">
+                <select name="type" id="leaveType" class="input-glass" required onchange="onLeaveTypeChange()">
                     <option value="">Select type</option>
                     <option value="annual" {{ old('type') === 'annual' ? 'selected' : '' }}>Annual Leave</option>
                     <option value="sick" {{ old('type') === 'sick' ? 'selected' : '' }}>Sick Leave</option>
@@ -31,12 +34,12 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
                 <div>
                     <label style="display:block;font-size:0.78rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#6b2232;margin-bottom:7px;">Start Date</label>
-                    <input type="date" name="start_date" value="{{ old('start_date') }}" class="input-glass" required>
+                    <input type="date" name="start_date" id="startDate" value="{{ old('start_date') }}" class="input-glass" required>
                     @error('start_date')<div style="font-size:0.78rem;color:#BE0822;margin-top:4px;">{{ $message }}</div>@enderror
                 </div>
                 <div>
                     <label style="display:block;font-size:0.78rem;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:#6b2232;margin-bottom:7px;">End Date</label>
-                    <input type="date" name="end_date" value="{{ old('end_date') }}" class="input-glass" required>
+                    <input type="date" name="end_date" id="endDate" value="{{ old('end_date') }}" class="input-glass" required>
                     @error('end_date')<div style="font-size:0.78rem;color:#BE0822;margin-top:4px;">{{ $message }}</div>@enderror
                 </div>
             </div>
@@ -60,20 +63,52 @@
 
 @push('scripts')
 <script>
-function toggleDocumentField() {
-    const type = document.getElementById('leaveType').value;
-    const field = document.getElementById('documentField');
-    const input = document.getElementById('documentInput');
-    if (type === 'sick') {
-        field.style.display = 'block';
-        input.required = true;
+document.addEventListener('DOMContentLoaded', function () {
+    const today     = new Date().toISOString().split('T')[0];
+    const startDate = document.getElementById('startDate');
+    const endDate   = document.getElementById('endDate');
+
+    // Batasi start_date minimal hari ini
+    startDate.min = today;
+
+    // Saat start_date berubah → end_date minimal = start_date yang dipilih
+    startDate.addEventListener('change', function () {
+        endDate.min = this.value || today;
+        // Reset end_date jika nilainya lebih awal dari start_date baru
+        if (endDate.value && endDate.value < this.value) {
+            endDate.value = this.value;
+        }
+    });
+
+    // Inisialisasi end_date min berdasarkan nilai awal start_date (misal: old value)
+    if (startDate.value) {
+        endDate.min = startDate.value;
     } else {
-        field.style.display = 'none';
-        input.required = false;
+        endDate.min = today;
     }
+
+    // Jalankan sekali saat load untuk state awal leave type
+    onLeaveTypeChange();
+});
+
+function onLeaveTypeChange() {
+    const type = document.getElementById('leaveType').value;
+
+    // Tampilkan/sembunyikan field dokumen (hanya untuk sick)
+    const docField = document.getElementById('documentField');
+    const docInput = document.getElementById('documentInput');
+    if (type === 'sick') {
+        docField.style.display = 'block';
+        docInput.required = true;
+    } else {
+        docField.style.display = 'none';
+        docInput.required = false;
+    }
+
+    // Tampilkan info kuota hanya saat annual leave dipilih
+    const quotaInfo = document.getElementById('quotaInfo');
+    quotaInfo.style.display = (type === 'annual') ? 'block' : 'none';
 }
-document.addEventListener('DOMContentLoaded', toggleDocumentField);
 </script>
 @endpush
 @endsection
-

@@ -15,19 +15,19 @@ class Payroll extends Model
         'month',
         'year',
         'base_salary',
-        'attendance_allowance',
+        'alpha',
         'deduction',
         'total_salary',
         'status',
     ];
 
     protected $casts = [
-        'month'                => 'integer',
-        'year'                 => 'integer',
-        'base_salary'          => 'integer',
-        'attendance_allowance' => 'integer',
-        'deduction'            => 'integer',
-        'total_salary'         => 'integer',
+        'month'        => 'integer',
+        'year'         => 'integer',
+        'base_salary'  => 'integer',
+        'alpha'        => 'integer',
+        'deduction'    => 'integer',
+        'total_salary' => 'integer',
     ];
 
     public function employee()
@@ -40,4 +40,3 @@ class Payroll extends Model
         return $this->belongsTo(SalaryPosition::class);
     }
 }
-

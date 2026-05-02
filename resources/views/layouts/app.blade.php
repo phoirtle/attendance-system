@@ -110,8 +110,9 @@
             transition: all 0.2s ease;
             letter-spacing: 0.01em;
             white-space: nowrap;
+            position: relative; {{-- penting untuk badge absolute --}}
         }
-    .nav-link:hover {
+        .nav-link:hover {
             background: rgba(190,8,34,0.10);
             color: #BE0822;
         }
@@ -128,6 +129,28 @@
             flex-shrink: 0;
         }
         .nav-divider { width: 1px; height: 22px; background: rgba(190,8,34,0.15); margin: 0 4px; }
+
+        /* ── Nav badge ────────────────────────────────────────────── */
+        .nav-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            border-radius: 999px;
+            font-size: 0.63rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            border: 2px solid rgba(255,255,255,0.85);
+            animation: fadeSlideUp 0.3s ease both;
+            pointer-events: none;
+        }
+        .nav-badge-red   { background: #BE0822; color: #fff; box-shadow: 0 2px 6px rgba(190,8,34,0.45); }
+        .nav-badge-green { background: #1a7a4a; color: #fff; box-shadow: 0 2px 6px rgba(26,122,74,0.45); }
 
         /* ── Buttons ──────────────────────────────────────────────── */
         .btn-primary {
@@ -232,7 +255,12 @@
         .flash-error   { background: rgba(190,8,34,0.10); color: #BE0822; border: 1px solid rgba(190,8,34,0.25); }
 
         /* ── Page wrapper ─────────────────────────────────────────── */
-        .page-wrapper { padding-top: 90px; min-height: 100vh; }
+        .page-wrapper {
+            padding-top: 90px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
         /* ── Scrollbar ────────────────────────────────────────────── */
         ::-webkit-scrollbar { width: 6px; }
@@ -277,6 +305,18 @@
         }
         .data-table tbody tr:hover td { background: rgba(255,255,255,0.35); }
         .data-table tbody tr:last-child td { border-bottom: none; }
+
+        /* ── Footer ───────────────────────────────────────────────── */
+        .site-footer {
+            margin-top: auto;
+            padding: 16px 24px 24px;
+            text-align: center;
+        }
+        .footer-copy {
+            font-size: 0.73rem;
+            color: rgba(107,34,50,0.40);
+            margin: 0;
+        }
     </style>
 
     @stack('head')
@@ -287,6 +327,17 @@
 {{--  TOP-CENTER GLASSMORPHISM NAVBAR                                --}}
 {{-- ════════════════════════════════════════════════════════════════ --}}
 @auth
+
+{{-- Hitung badge count sekali di sini, dipakai di bawah --}}
+@php
+    $pendingLeaveCount  = auth()->user()->isAdmin()
+        ? \App\Models\Leave::pending()->count()
+        : 0;
+    $approvedLeaveCount = auth()->user()->isUser()
+        ? \App\Models\Leave::approved()->where('user_id', auth()->id())->count()
+        : 0;
+@endphp
+
 <nav class="navbar">
     {{-- Brand logo --}}
     <a href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('attendance.index') }}"
@@ -313,12 +364,19 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         My Attendance
     </a>
+    @endif
 
-    {{-- My Leaves (user) --}}
+    {{-- My Leaves (user) — badge hijau jika ada yang approved --}}
+    @if(auth()->user()->isUser())
     <a href="{{ route('leaves.index') }}"
        class="nav-link {{ request()->routeIs('leaves.*') ? 'active' : '' }}">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         My Leaves
+        @if($approvedLeaveCount > 0)
+        <span class="nav-badge nav-badge-green">
+            {{ $approvedLeaveCount > 99 ? '99+' : $approvedLeaveCount }}
+        </span>
+        @endif
     </a>
     @endif
 
@@ -334,9 +392,18 @@
     {{-- Salary (admin) --}}
     @if(auth()->user()->isAdmin())
     <a href="{{ route('admin.salary-positions.index') }}"
-       class="nav-link {{ request()->routeIs('admin.salary-positions*') || request()->routeIs('admin.payrolls*') ? 'active' : '' }}">
+       class="nav-link {{ request()->routeIs('admin.salary-positions*') ? 'active' : '' }}">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         Salary
+    </a>
+    @endif
+
+    {{-- Payrolls (admin) --}}
+    @if(auth()->user()->isAdmin())
+    <a href="{{ route('admin.payrolls.index') }}"
+       class="nav-link {{ request()->routeIs('admin.payrolls*') ? 'active' : '' }}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        Payrolls
     </a>
     @endif
 
@@ -349,12 +416,17 @@
     </a>
     @endif
 
-    {{-- Leave Approvals (admin) --}}
+    {{-- Leave Approvals (admin) — badge merah jika ada pending --}}
     @if(auth()->user()->isAdmin())
     <a href="{{ route('admin.leaves') }}"
        class="nav-link {{ request()->routeIs('admin.leaves') ? 'active' : '' }}">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         Leaves
+        @if($pendingLeaveCount > 0)
+        <span class="nav-badge nav-badge-red">
+            {{ $pendingLeaveCount > 99 ? '99+' : $pendingLeaveCount }}
+        </span>
+        @endif
     </a>
     @endif
 
@@ -370,9 +442,14 @@
     <div class="nav-divider"></div>
 
     {{-- Profile --}}
+    @if(auth()->user()->isAdmin())
+    <a href="{{ route('admin.users.edit', auth()->user()) }}"
+       class="nav-link {{ request()->is('admin/users/'.auth()->id().'/edit') ? 'active' : '' }}">
+    @else
     <a href="{{ route('profile.show') }}"
        class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
-    @if(auth()->user()->photo_path)
+    @endif
+        @if(auth()->user()->photo_path)
             <img src="{{ asset('storage/' . auth()->user()->photo_path) }}" alt="">
         @else
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -394,7 +471,21 @@
 {{--  PAGE CONTENT                                                   --}}
 {{-- ════════════════════════════════════════════════════════════════ --}}
 <div class="page-wrapper">
-    @yield('content')
+    <div style="flex:1;">
+        @yield('content')
+    </div>
+
+    {{-- ════════════════════════════════════════════════════════════
+         FOOTER — hanya untuk karyawan (bukan admin)
+    ═══════════════════════════════════════════════════════════════ --}}
+    @auth
+    @if(auth()->user()->isUser())
+    <footer class="site-footer">
+        <p class="footer-copy">&copy; {{ date('Y') }} Heartstrings &mdash; Employee Attendance System</p>
+    </footer>
+    @endif
+    @endauth
+
 </div>
 
 @stack('scripts')

@@ -31,5 +31,16 @@ class Leave extends Model
     {
         return $this->start_date->diffInDays($this->end_date) + 1;
     }
-}
 
+    // ── Scopes ──────────────────────────────────────────────────────────────
+
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
+}

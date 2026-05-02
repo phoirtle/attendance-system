@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::table('payrolls', function (Blueprint $table) {
             $table->dropColumn('attendance_allowance');
-            // alpha = jumlah hari absen tanpa keterangan
             $table->unsignedTinyInteger('alpha')->default(0)->after('base_salary');
         });
     }

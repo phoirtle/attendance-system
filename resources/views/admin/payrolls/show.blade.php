@@ -46,9 +46,9 @@
                     <td style="padding:10px 0;">Base Salary</td>
                     <td style="padding:10px 0;text-align:right;font-weight:600;">@rupiah($payroll->base_salary)</td>
                 </tr>
-                <tr style="border-bottom:1px solid rgba(190,8,34,0.08);">
-                    <td style="padding:10px 0;">Attendance Allowance</td>
-                    <td style="padding:10px 0;text-align:right;font-weight:600;color:#15803d;">+ @rupiah($payroll->attendance_allowance)</td>
+<tr style="border-bottom:1px solid rgba(190,8,34,0.08);">
+                    <td style="padding:10px 0;">Alpha (Hari Tidak Hadir)</td>
+                    <td style="padding:10px 0;text-align:right;font-weight:600;color:#BE0822;">{{ $payroll->alpha }} hari</td>
                 </tr>
                 <tr style="border-bottom:1px solid rgba(190,8,34,0.08);">
                     <td style="padding:10px 0;">Deduction (Absent)</td>

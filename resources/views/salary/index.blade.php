@@ -57,8 +57,8 @@
             <table class="data-table" style="min-width:600px;">
                 <thead><tr>
                     <th style="padding-left:24px;">Period</th>
-                    <th>Base Salary</th>
-                    <th>Allowance</th>
+<th>Base Salary</th>
+                    <th>Alpha</th>
                     <th>Deduction</th>
                     <th>Total</th>
                     <th style="padding-right:24px;text-align:right;">Actions</th>
@@ -68,7 +68,7 @@
                 <tr>
                     <td style="padding-left:24px;font-weight:600;">{{ \Carbon\Carbon::create($p->year, $p->month)->format('F Y') }}</td>
                     <td>@rupiah($p->base_salary)</td>
-                    <td style="color:#15803d;">@rupiah($p->attendance_allowance)</td>
+<td style="color:#BE0822;">{{ $p->alpha }} hari</td>
                     <td style="color:#BE0822;">@rupiah($p->deduction)</td>
                     <td style="font-weight:700;color:#3d1a22;">@rupiah($p->total_salary)</td>
                     <td style="padding-right:24px;text-align:right;">

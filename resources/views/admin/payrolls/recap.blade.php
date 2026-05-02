@@ -70,7 +70,7 @@
                     <th>Department</th>
                     <th>Position</th>
                     <th style="text-align:right;">Base</th>
-                    <th style="text-align:right;">Allowance</th>
+<th style="text-align:right;">Alpha</th>
                     <th style="text-align:right;">Deduction</th>
                     <th style="padding-right:24px;text-align:right;">Total</th>
                 </tr></thead>
@@ -81,7 +81,7 @@
                     <td>{{ $p->employee->department ?? '—' }}</td>
                     <td>{{ $p->salaryPosition->position_name ?? '—' }}</td>
                     <td style="text-align:right;">@rupiah($p->base_salary)</td>
-                    <td style="text-align:right;">@rupiah($p->attendance_allowance)</td>
+<td style="text-align:right;">{{ $p->alpha }} hari</td>
                     <td style="text-align:right;color:#BE0822;">@rupiah($p->deduction)</td>
                     <td style="padding-right:24px;text-align:right;font-weight:700;">@rupiah($p->total_salary)</td>
                 </tr>

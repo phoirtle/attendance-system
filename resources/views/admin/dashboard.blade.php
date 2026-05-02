@@ -150,16 +150,6 @@
             </div>
         </a>
 
-        <a href="{{ route('admin.recap', ['date' => now()->format('Y-m-d')]) }}" class="glass panel fade-in delay-3"
-           style="text-decoration:none;display:flex;align-items:center;gap:14px;padding:18px 20px;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
-            <div style="width:42px;height:42px;background:linear-gradient(135deg,#FD9898,#EFAAB0);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#BE0822" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <div>
-                <div style="font-size:0.9rem;font-weight:600;color:#3d1a22;">Today's Activity</div>
-                <div style="font-size:0.75rem;color:rgba(107,34,50,0.55);">{{ $presentToday }}/{{ $totalUsers }} checked in</div>
-            </div>
-        </a>
     </div>
 </div>
 @endsection

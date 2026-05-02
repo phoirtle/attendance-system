@@ -13,12 +13,10 @@ class SalaryPosition extends Model
         'position_name',
         'department',
         'base_salary',
-        'allowance',
     ];
 
     protected $casts = [
         'base_salary' => 'integer',
-        'allowance'   => 'integer',
     ];
 
     public function users()
@@ -31,4 +29,3 @@ class SalaryPosition extends Model
         return $this->hasMany(Payroll::class);
     }
 }
-
