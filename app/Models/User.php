@@ -12,6 +12,8 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 'email', 'password', 'role', 'department', 'photo_path', 'session_id', 'salary_position_id',
+         'leaves_last_seen',         // ← tambah ini
+    'admin_leaves_last_seen',  
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -21,6 +23,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+             'leaves_last_seen'       => 'datetime', // ← tambah ini
+        'admin_leaves_last_seen' => 'datetime',
         ];
     }
 

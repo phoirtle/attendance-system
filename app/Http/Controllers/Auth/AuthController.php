@@ -11,8 +11,9 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (Auth::check()) {
-            return redirect()->route(
-                Auth::user()->isAdmin() ? 'admin.dashboard' : 'attendance.index'
+            // ✅ Tanpa ->intended() supaya selalu ikut role, tidak ke URL lama
+            return redirect(
+                Auth::user()->isAdmin() ? route('admin.dashboard') : route('attendance.index')
             );
         }
         return view('auth.login');
@@ -45,7 +46,8 @@ class AuthController extends Controller
                 $user->update(['session_id' => $request->session()->getId()]);
             }
 
-            return redirect()->intended(
+            // ✅ Tanpa ->intended() supaya selalu ikut role, tidak ke URL lama
+            return redirect(
                 $user->isAdmin() ? route('admin.dashboard') : route('attendance.index')
             );
         }
