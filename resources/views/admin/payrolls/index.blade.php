@@ -63,8 +63,8 @@
                     <th style="padding-left:24px;">Employee</th>
                     <th>Position</th>
                     <th>Department</th>
-                    <th>Base Salary</th>
-                    <th>Allowance</th>
+<th>Base Salary</th>
+                    <th>Alpha</th>
                     <th>Deduction</th>
                     <th>Total</th>
                     <th>Status</th>
@@ -77,7 +77,7 @@
                     <td>{{ $p->salaryPosition->position_name ?? '—' }}</td>
                     <td>{{ $p->employee->department ?? '—' }}</td>
                     <td>@rupiah($p->base_salary)</td>
-                    <td>@rupiah($p->attendance_allowance)</td>
+<td>{{ $p->alpha }} hari</td>
                     <td style="color:#BE0822;">@rupiah($p->deduction)</td>
                     <td style="font-weight:700;color:#3d1a22;">@rupiah($p->total_salary)</td>
                     <td>
@@ -100,5 +100,28 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    const monthSelect = document.querySelector('select[name="month"]');
+    const yearSelect  = document.querySelector('select[name="year"]');
+    const hiddenMonth = document.querySelector('form[action*="generate"] input[name="month"]');
+    const hiddenYear  = document.querySelector('form[action*="generate"] input[name="year"]');
+    const generateLabel = document.querySelector('form[action*="generate"] span');
+
+    function syncGenerate() {
+        const m = monthSelect.value;
+        const y = yearSelect.value;
+        hiddenMonth.value = m;
+        hiddenYear.value  = y;
+
+        const monthName = monthSelect.options[monthSelect.selectedIndex].text;
+        generateLabel.textContent = `Generate payroll for ${monthName} ${y}:`;
+    }
+
+    monthSelect.addEventListener('change', syncGenerate);
+    yearSelect.addEventListener('change', syncGenerate);
+</script>
+@endpush
 @endsection
 

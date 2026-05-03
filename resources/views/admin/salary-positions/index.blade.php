@@ -23,14 +23,12 @@
 
     <div class="glass-strong panel fade-in delay-2" style="background:rgba(255,249,245,0.60);padding:0;overflow:hidden;">
         <div style="overflow-x:auto;">
-            <table class="data-table" style="min-width:700px;">
+            <table class="data-table" style="min-width:600px;">
                 <thead><tr>
                     <th style="padding-left:24px;">No</th>
                     <th>Position Name</th>
                     <th>Department</th>
                     <th>Base Salary</th>
-                    <th>Allowance</th>
-                    <th>Total Salary</th>
                     <th style="padding-right:24px;text-align:right;">Actions</th>
                 </tr></thead>
                 <tbody>
@@ -39,9 +37,7 @@
                     <td style="padding-left:24px;">{{ $i + 1 }}</td>
                     <td style="font-weight:600;">{{ $pos->position_name }}</td>
                     <td>{{ $pos->department ?? '—' }}</td>
-                    <td>@rupiah($pos->base_salary)</td>
-                    <td>@rupiah($pos->allowance)</td>
-                    <td style="font-weight:700;color:#3d1a22;">@rupiah($pos->base_salary + $pos->allowance)</td>
+                    <td style="font-weight:700;color:#3d1a22;">@rupiah($pos->base_salary)</td>
                     <td style="padding-right:24px;text-align:right;">
                         <a href="{{ route('admin.salary-positions.edit', $pos) }}" class="btn-outline" style="text-decoration:none;padding:6px 14px;font-size:0.78rem;border-radius:8px;margin-right:6px;">Edit</a>
                         <form method="POST" action="{{ route('admin.salary-positions.destroy', $pos) }}" style="display:inline;" onsubmit="return confirm('Delete this position?');">
@@ -52,7 +48,7 @@
                     </td>
                 </tr>
                 @empty
-                <tr><td colspan="7" style="text-align:center;padding:40px;color:rgba(107,34,50,0.45);">No salary positions found</td></tr>
+                <tr><td colspan="5" style="text-align:center;padding:40px;color:rgba(107,34,50,0.45);">No salary positions found</td></tr>
                 @endforelse
                 </tbody>
             </table>
@@ -60,4 +56,3 @@
     </div>
 </div>
 @endsection
-

@@ -260,8 +260,53 @@ class AttendanceController extends Controller
 
     public function usersIndex()
     {
-        $users = User::where('role', 'user')->orderBy('name')->get();
-        return view('admin.users.index', compact('users'));
+        $currentMonth = now()->month;
+        $currentYear  = now()->year;
+
+        $users = User::where('role', 'user')
+            ->with([
+                'salaryPosition',
+                'attendances' => fn($q) => $q->whereMonth('date', $currentMonth)
+                                             ->whereYear('date', $currentYear),
+                'leaves',
+            ])
+            ->orderBy('name')
+            ->get();
+
+        // Siapkan data JSON untuk panel detail (hindari logika kompleks di blade)
+        $staffData = $users->map(function ($u) {
+            return [
+                'id'              => $u->id,
+                'name'            => $u->name,
+                'email'           => $u->email,
+                'department'      => $u->department ?? '—',
+                'photo_url'       => $u->photo_path ? Storage::url($u->photo_path) : null,
+                'initials'        => strtoupper(substr($u->name, 0, 1)),
+                'position'        => $u->salaryPosition?->position_name ?? '—',
+                'base_salary'     => $u->salaryPosition?->base_salary ?? null,
+                'remaining_leave' => $u->remainingLeaveDays(),
+                'edit_url'        => route('admin.users.edit', $u),
+                'attendance_this_month' => [
+                    'present' => $u->attendances->where('status', 'present')->count(),
+                    'late'    => $u->attendances->where('status', 'late')->count(),
+                    'absent'  => $u->attendances->where('status', 'absent')->count(),
+                    'leave'   => $u->attendances->where('status', 'leave')->count(),
+                ],
+                'recent_leaves' => $u->leaves
+                    ->sortByDesc('created_at')
+                    ->take(5)
+                    ->values()
+                    ->map(fn ($l) => [
+                        'type'       => $l->type,
+                        'start_date' => $l->start_date->format('d M Y'),
+                        'end_date'   => $l->end_date->format('d M Y'),
+                        'duration'   => $l->duration(),
+                        'status'     => $l->status,
+                    ])->toArray(),
+            ];
+        })->keyBy('id');
+
+        return view('admin.users.index', compact('users', 'staffData'));
     }
 
     public function usersCreate()
@@ -352,8 +397,9 @@ class AttendanceController extends Controller
         $duration = \Carbon\Carbon::parse($request->start_date)
             ->diffInDays(\Carbon\Carbon::parse($request->end_date)) + 1;
 
-        if ($request->input('type') !== 'sick' && $duration > $user->remainingLeaveDays()) {
-            return back()->withErrors(['end_date' => 'Leave quota exceeded. Remaining: ' . $user->remainingLeaveDays() . ' days.']);
+        // Hanya annual leave yang dibatasi oleh kuota cuti
+        if ($request->input('type') === 'annual' && $duration > $user->remainingLeaveDays()) {
+            return back()->withErrors(['end_date' => 'Leave quota exceeded. Remaining annual leave: ' . $user->remainingLeaveDays() . ' days.']);
         }
 
         $documentPath = null;

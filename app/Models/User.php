@@ -59,11 +59,18 @@ class User extends Authenticatable
         return $this->attendances()->whereDate('date', today())->first();
     }
 
-    public function approvedLeaveDaysThisYear(): int
+    /**
+     * Hitung total hari cuti tahunan (annual leave) yang sudah disetujui.
+     * Hanya tipe 'annual' yang mengurangi kuota — sick & permission tidak dihitung.
+     */
+    public function approvedLeaveDaysThisYear(int $year = null): int
     {
+        $year = $year ?? now()->year;
+
         return (int) $this->leaves()
             ->where('status', 'approved')
-            ->whereYear('start_date', now()->year)
+            ->where('type', 'annual')           // ← hanya annual leave
+            ->whereYear('start_date', $year)
             ->get()
             ->sum(fn ($leave) => $leave->duration());
     }
@@ -82,4 +89,3 @@ class User extends Authenticatable
             ->exists();
     }
 }
-
