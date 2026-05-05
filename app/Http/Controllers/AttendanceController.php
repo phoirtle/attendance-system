@@ -256,6 +256,16 @@ class AttendanceController extends Controller
                 'base_salary'     => $u->salaryPosition?->base_salary ?? null,
                 'remaining_leave' => $u->remainingLeaveDays(),
                 'edit_url'        => route('admin.users.edit', $u),
+                 'phone'               => $u->phone,
+        'address'             => $u->address,
+        'birth_date'          => $u->birth_date?->format('d M Y'),
+        'gender'              => $u->gender,
+        'employee_id_number'  => $u->employee_id_number,
+        'join_date'           => $u->join_date?->format('d M Y'),
+        'employment_status'   => $u->employment_status,
+        'work_duration'       => $u->join_date
+                                    ? $u->join_date->diffForHumans(now(), true)
+                                    : null,
                 'attendance_this_month' => [
                     'present' => $u->attendances->where('status', 'present')->count(),
                     'late'    => $u->attendances->where('status', 'late')->count(),
@@ -287,18 +297,32 @@ class AttendanceController extends Controller
     public function usersStore(Request $request)
     {
         $request->validate([
-            'name'       => ['required', 'string', 'max:255'],
-            'email'      => ['required', 'email', 'unique:users,email'],
-            'department' => ['nullable', 'string', 'max:255'],
-            'password'   => ['required', 'string', 'min:6'],
+            'name'              => ['required', 'string', 'max:255'],
+            'email'             => ['required', 'email', 'unique:users,email'],
+            'department'        => ['nullable', 'string', 'max:255'],
+            'password'          => ['required', 'string', 'min:6'],
+            'phone'             => ['nullable', 'string', 'max:20'],
+            'birth_date'        => ['nullable', 'date'],
+            'gender'            => ['nullable', 'in:male,female'],
+            'address'           => ['nullable', 'string'],
+            'employee_id_number'=> ['nullable', 'string', 'max:50', 'unique:users,employee_id_number'],
+            'join_date'         => ['nullable', 'date'],
+            'employment_status' => ['nullable', 'in:permanent,contract,intern'],
         ]);
 
         User::create([
-            'name'       => $request->name,
-            'email'      => $request->email,
-            'department' => $request->department,
-            'password'   => bcrypt($request->password),
-            'role'       => 'user',
+            'name'              => $request->name,
+            'email'             => $request->email,
+            'department'        => $request->department,
+            'password'          => bcrypt($request->password),
+            'role'              => 'user',
+            'phone'             => $request->phone,
+            'address'           => $request->address,
+            'birth_date'        => $request->birth_date,
+            'gender'            => $request->gender,
+            'employee_id_number'=> $request->employee_id_number,
+            'join_date'         => $request->join_date,
+            'employment_status' => $request->employment_status,
         ]);
 
         return redirect()->route('admin.users.index')->with('success', 'Employee created successfully.');
@@ -312,12 +336,24 @@ class AttendanceController extends Controller
     public function usersUpdate(Request $request, User $user)
     {
         $request->validate([
-            'name'       => ['required', 'string', 'max:255'],
-            'email'      => ['required', 'email', 'unique:users,email,' . $user->id],
-            'department' => ['nullable', 'string', 'max:255'],
+            'name'              => ['required', 'string', 'max:255'],
+            'email'             => ['required', 'email', 'unique:users,email,' . $user->id],
+            'department'        => ['nullable', 'string', 'max:255'],
+            'phone'             => ['nullable', 'string', 'max:20'],
+            'birth_date'        => ['nullable', 'date'],
+            'gender'            => ['nullable', 'in:male,female'],
+            'address'           => ['nullable', 'string'],
+            'employee_id_number'=> ['nullable', 'string', 'max:50', 'unique:users,employee_id_number,' . $user->id],
+            'join_date'         => ['nullable', 'date'],
+            'employment_status' => ['nullable', 'in:permanent,contract,intern'],
+            'password'          => ['nullable', 'string', 'min:6'],
         ]);
 
-        $user->update($request->only('name', 'email', 'department'));
+        $user->update(array_filter($request->only([
+            'name', 'email', 'department', 'phone', 'address', 
+            'birth_date', 'gender', 'employee_id_number', 
+            'join_date', 'employment_status'
+        ])));
 
         if ($request->filled('password')) {
             $user->update(['password' => bcrypt($request->password)]);
