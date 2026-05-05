@@ -25,7 +25,7 @@
         <div style="overflow-x:auto;">
             <table class="data-table" style="min-width:600px;">
                 <thead><tr>
-                    <th style="padding-left:24px;">Nama</th>
+                    <th style="padding-left:24px;">Name</th>
                     <th>Email</th>
                     <th>Department</th>
                     <th style="padding-right:24px;text-align:right;">Actions</th>
