@@ -8,15 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('salary_positions', function (Blueprint $table) {
-            $table->dropColumn('allowance');
+        Schema::create('salary_positions', function (Blueprint $table) {
+            $table->id();
+            $table->string('position_name');
+            $table->string('department')->nullable();
+            $table->unsignedBigInteger('base_salary')->default(0);
+            $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::table('salary_positions', function (Blueprint $table) {
-            $table->unsignedBigInteger('allowance')->default(0)->after('base_salary');
-        });
+        Schema::dropIfExists('salary_positions');
     }
 };

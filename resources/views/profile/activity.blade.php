@@ -36,7 +36,7 @@
                     </td>
                     <td style="padding-right:24px;">
                         <span class="badge {{ $a->status === 'present' ? 'badge-success' : ($a->status === 'late' ? 'badge-warning' : 'badge-danger') }}">
-                            {{ ucfirst($a->status) }}
+                            {{ $a->status === 'alpha' ? 'Alpha' : ucfirst($a->status) }}
                         </span>
                     </td>
                 </tr>

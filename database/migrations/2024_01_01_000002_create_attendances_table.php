@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('photo_path')->nullable();
             $table->string('clock_out_photo_path')->nullable();
             $table->enum('location_status', ['in_range', 'out_of_range'])->default('in_range');
-            $table->enum('status', ['present', 'late', 'absent'])->default('present');
+            $table->enum('status', ['present', 'late', 'absent', 'leave', 'alpha'])->default('present');
             $table->text('notes')->nullable();
             $table->timestamps();
 

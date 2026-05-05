@@ -9,8 +9,7 @@ class Kernel extends ConsoleKernel
 {
     protected function schedule(Schedule $schedule): void
     {
-        // Example: Mark absent employees at end of day
-        // $schedule->command('attendance:mark-absent')->dailyAt('23:59');
+        $schedule->command('attendance:mark-absent')->weekdays()->dailyAt('23:59');
     }
 
     protected function commands(): void

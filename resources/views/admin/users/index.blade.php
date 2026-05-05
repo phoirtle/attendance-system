@@ -352,7 +352,7 @@ function renderPanel(id) {
         <div style="display:flex;gap:8px;">
             <div class="stat-box"><div class="stat-num" style="color:#166534;">${att.present}</div><div class="stat-lbl">Hadir</div></div>
             <div class="stat-box"><div class="stat-num" style="color:#92400e;">${att.late}</div><div class="stat-lbl">Terlambat</div></div>
-            <div class="stat-box"><div class="stat-num" style="color:#BE0822;">${att.absent}</div><div class="stat-lbl">Absen</div></div>
+            <div class="stat-box"><div class="stat-num" style="color:#BE0822;">${att.absent}</div><div class="stat-lbl">Alpha</div></div>
             <div class="stat-box"><div class="stat-num" style="color:#1d4ed8;">${att.leave}</div><div class="stat-lbl">Cuti</div></div>
         </div>
 

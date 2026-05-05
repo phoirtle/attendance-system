@@ -48,7 +48,7 @@
             <td style="color:#BE0822;">{{ $payroll->alpha }} hari</td>
         </tr>
         <tr>
-            <td>Deduction (Absent: {{ $calc['absent_days'] }} days × Rp 50.000)</td>
+            <td>Deduction (Alpha: {{ $calc['absent_days'] }} days x 4.5% base salary)</td>
             <td style="color:#BE0822;">- Rp {{ number_format($payroll->deduction, 0, ',', '.') }}</td>
         </tr>
         <tr class="total">
@@ -59,7 +59,7 @@
 
     <div style="font-size:0.85rem;color:#666;line-height:1.6;margin-bottom:32px;">
         <strong>Attendance Summary:</strong><br>
-        Work Days: {{ $calc['work_days'] }} | Present: {{ $calc['present_days'] + $calc['late_days'] }} | Late: {{ $calc['late_days'] }} | Absent: {{ $calc['absent_days'] }} | Leave: {{ $calc['leave_days'] }}
+        Work Days: {{ $calc['work_days'] }} | Present: {{ $calc['present_days'] + $calc['late_days'] }} | Late: {{ $calc['late_days'] }} | Alpha: {{ $calc['absent_days'] }} | Leave: {{ $calc['leave_days'] }}
     </div>
 
     <div class="footer">

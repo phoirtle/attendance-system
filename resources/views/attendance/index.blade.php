@@ -160,7 +160,7 @@
                     <td>{{ $a->distance_meters ? $a->distance_meters . 'm' : '—' }}</td>
                     <td>
                         <span class="badge {{ $a->status === 'present' ? 'badge-success' : ($a->status === 'late' ? 'badge-warning' : 'badge-danger') }}">
-                            {{ ucfirst($a->status) }}
+                            {{ $a->status === 'alpha' ? 'Alpha' : ucfirst($a->status) }}
                         </span>
                     </td>
                 </tr>

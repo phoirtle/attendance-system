@@ -17,7 +17,7 @@
             ['Present Today', $presentToday, '#15803d', '✓',  '#EED7C8'],
             ['Late Today',    $lateToday,    '#92400e', '⏰', '#EFAAB0'],
             ['Leave Today',   $leaveToday,   '#1d4ed8', 'L',  '#EED7C8'],
-            ['Absent Today',  $absentToday,  '#BE0822', '✗',  '#E86975'],
+            ['Alpha Today',   $absentToday,  '#BE0822', 'A',  '#E86975'],
         ] as [$label, $val, $txtColor, $icon, $bg])
         <div class="glass-strong panel fade-in delay-1" style="background:{{ $bg }}33;text-align:center;padding:22px 16px;">
             <div style="font-size:2rem;font-weight:800;color:{{ $txtColor }};line-height:1;">{{ $val }}</div>
@@ -28,7 +28,7 @@
 
     <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:20px;">
 
-        {{-- ── Donut chart: Present vs Absent ───────────────────────── --}}
+        {{-- ── Donut chart: Present vs Alpha ───────────────────────── --}}
         <div class="glass-strong panel fade-in delay-1" style="background:rgba(255,255,255,0.50);padding-top:36px;">
             <div style="font-size:0.85rem;font-weight:600;color:#3d1a22;margin-bottom:20px;">Present Employees — Today</div>
 
@@ -65,7 +65,7 @@
                     <div>
                         <div style="display:flex;align-items:center;gap:7px;margin-bottom:2px;">
                             <div style="width:10px;height:10px;border-radius:50%;background:#BE0822;"></div>
-                            <span style="font-size:0.78rem;color:#3d1a22;font-weight:500;">Absent</span>
+                            <span style="font-size:0.78rem;color:#3d1a22;font-weight:500;">Alpha</span>
                         </div>
                         <div style="font-size:1.1rem;font-weight:700;color:#3d1a22;padding-left:17px;">{{ $absentToday }}</div>
                     </div>
