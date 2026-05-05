@@ -8,17 +8,30 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasTable('payrolls') || Schema::hasColumn('payrolls', 'alpha')) {
+            return;
+        }
+
         Schema::table('payrolls', function (Blueprint $table) {
-            $table->dropColumn('attendance_allowance');
+            if (Schema::hasColumn('payrolls', 'attendance_allowance')) {
+                $table->dropColumn('attendance_allowance');
+            }
             $table->unsignedTinyInteger('alpha')->default(0)->after('base_salary');
         });
     }
 
     public function down(): void
     {
+        if (!Schema::hasTable('payrolls') || !Schema::hasColumn('payrolls', 'alpha')) {
+            return;
+        }
+
         Schema::table('payrolls', function (Blueprint $table) {
             $table->dropColumn('alpha');
-            $table->unsignedBigInteger('attendance_allowance')->default(0)->after('base_salary');
+
+            if (!Schema::hasColumn('payrolls', 'attendance_allowance')) {
+                $table->unsignedBigInteger('attendance_allowance')->default(0)->after('base_salary');
+            }
         });
     }
 };

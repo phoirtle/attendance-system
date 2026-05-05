@@ -57,14 +57,14 @@
         $total    = $attendances->count();
         $present  = $attendances->where('status', 'present')->count();
         $late     = $attendances->where('status', 'late')->count();
-        $inRange  = $attendances->where('location_status', 'in_range')->count();
+        $alpha    = $attendances->whereIn('status', ['absent', 'alpha'])->count();
     @endphp
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
         @foreach([
             ['Total Records', $total,   '#3d1a22', '📋'],
             ['Present',       $present, '#15803d', '✓'],
             ['Late',          $late,    '#92400e', '⏰'],
-            ['In Range',      $inRange, '#1d4ed8', '📍'],
+            ['Alpha',         $alpha,   '#BE0822', 'A'],
         ] as [$label, $val, $color, $icon])
         <div class="glass panel fade-in delay-1" style="padding:18px 20px;text-align:center;">
             <div style="font-size:1.5rem;margin-bottom:4px;">{{ $icon }}</div>
@@ -117,7 +117,7 @@
                     </td>
                     <td>
                         <span class="badge {{ $a->status === 'present' ? 'badge-success' : ($a->status === 'late' ? 'badge-warning' : 'badge-danger') }}">
-                            {{ ucfirst($a->status) }}
+                            {{ $a->status === 'alpha' ? 'Alpha' : ucfirst($a->status) }}
                         </span>
                     </td>
                     <td style="padding-right:24px;">

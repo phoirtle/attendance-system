@@ -95,7 +95,7 @@
         <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-bottom:1px solid rgba(107,34,50,0.06);">
             <div>
                 <div style="font-size:0.88rem;font-weight:600;color:#BE0822;">Deduction (Alpha)</div>
-                <div style="font-size:0.75rem;color:rgba(107,34,50,0.50);margin-top:1px;">{{ $calc['alpha'] }} hari × Rp 50.000</div>
+                <div style="font-size:0.75rem;color:rgba(107,34,50,0.50);margin-top:1px;">{{ $calc['alpha'] }} hari x 4.5% gaji pokok (@rupiah($calc['deduction_per_alpha'])/hari)</div>
             </div>
             <div style="font-size:1rem;font-weight:700;color:#BE0822;">− @rupiah($calc['deduction'])</div>
         </div>

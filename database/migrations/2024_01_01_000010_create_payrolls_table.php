@@ -8,18 +8,25 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('payrolls', function (Blueprint $table) {
-            $table->dropColumn('attendance_allowance');
-            // alpha = jumlah hari absen tanpa keterangan
-            $table->unsignedTinyInteger('alpha')->default(0)->after('base_salary');
+        Schema::create('payrolls', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('employee_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('salary_position_id')->nullable()->constrained('salary_positions')->nullOnDelete();
+            $table->unsignedTinyInteger('month');
+            $table->unsignedSmallInteger('year');
+            $table->unsignedBigInteger('base_salary')->default(0);
+            $table->unsignedTinyInteger('alpha')->default(0);
+            $table->unsignedBigInteger('deduction')->default(0);
+            $table->unsignedBigInteger('total_salary')->default(0);
+            $table->string('status')->default('draft');
+            $table->timestamps();
+
+            $table->unique(['employee_id', 'month', 'year']);
         });
     }
 
     public function down(): void
     {
-        Schema::table('payrolls', function (Blueprint $table) {
-            $table->dropColumn('alpha');
-            $table->unsignedBigInteger('attendance_allowance')->default(0)->after('base_salary');
-        });
+        Schema::dropIfExists('payrolls');
     }
 };

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Attendance;
 use App\Models\User;
+use App\Services\AttendanceAlphaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
@@ -41,11 +42,13 @@ class AttendanceController extends Controller
         return view('attendance.index', compact('user', 'attendance'));
     }
 
-    public function history(Request $request)
+    public function history(Request $request, AttendanceAlphaService $alphaService)
     {
         $user  = auth()->user();
         $month = $request->integer('month', now()->month);
         $year  = $request->integer('year', now()->year);
+
+        $alphaService->markMissingForMonth($month, $year, $user);
 
         $attendances = $user->attendances()
             ->whereMonth('date', $month)
@@ -129,12 +132,14 @@ class AttendanceController extends Controller
         ]);
     }
 
-    public function adminRecap(Request $request)
+    public function adminRecap(Request $request, AttendanceAlphaService $alphaService)
     {
         if ($request->filled('date')) {
             $date  = \Carbon\Carbon::parse($request->input('date'));
             $month = $date->month;
             $year  = $date->year;
+
+            $alphaService->markMissingForDate($date);
 
             $attendances = Attendance::with('user')
                 ->whereDate('date', $date)
@@ -143,6 +148,8 @@ class AttendanceController extends Controller
         } else {
             $month = $request->integer('month', now()->month);
             $year  = $request->integer('year', now()->year);
+
+            $alphaService->markMissingForMonth($month, $year);
 
             $attendances = Attendance::with('user')
                 ->whereMonth('date', $month)
@@ -156,15 +163,17 @@ class AttendanceController extends Controller
         return view('admin.recap', compact('attendances', 'users', 'month', 'year'));
     }
 
-    public function adminDashboard()
+    public function adminDashboard(AttendanceAlphaService $alphaService)
     {
         $today = today();
 
+        $alphaService->markMissingForMonth($today->month, $today->year);
+
         $totalUsers   = User::where('role', 'user')->count();
-        $presentToday = Attendance::whereDate('date', $today)->where('status', '!=', 'absent')->where('status', '!=', 'leave')->count();
+        $presentToday = Attendance::whereDate('date', $today)->whereIn('status', ['present', 'late'])->count();
         $lateToday    = Attendance::whereDate('date', $today)->where('status', 'late')->count();
         $leaveToday   = Attendance::whereDate('date', $today)->where('status', 'leave')->count();
-        $absentToday  = $totalUsers - $presentToday - $leaveToday;
+        $absentToday  = Attendance::whereDate('date', $today)->whereIn('status', ['absent', 'alpha'])->count();
         $pendingLeaves = \App\Models\Leave::where('status', 'pending')->count();
 
         $weekStart = $today->copy()->startOfWeek();
@@ -183,10 +192,12 @@ class AttendanceController extends Controller
         ));
     }
 
-    public function exportRecap(Request $request)
+    public function exportRecap(Request $request, AttendanceAlphaService $alphaService)
     {
         $month = $request->integer('month', now()->month);
         $year  = $request->integer('year', now()->year);
+
+        $alphaService->markMissingForMonth($month, $year);
 
         $attendances = Attendance::with('user')
             ->whereMonth('date', $month)
@@ -269,7 +280,7 @@ class AttendanceController extends Controller
                 'attendance_this_month' => [
                     'present' => $u->attendances->where('status', 'present')->count(),
                     'late'    => $u->attendances->where('status', 'late')->count(),
-                    'absent'  => $u->attendances->where('status', 'absent')->count(),
+                    'absent'  => $u->attendances->whereIn('status', ['absent', 'alpha'])->count(),
                     'leave'   => $u->attendances->where('status', 'leave')->count(),
                 ],
                 'recent_leaves' => $u->leaves

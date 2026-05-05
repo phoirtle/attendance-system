@@ -190,6 +190,7 @@
         }
         .badge-success { background: rgba(22,163,74,0.15); color: #15803d; border: 1px solid rgba(22,163,74,0.25); }
         .badge-warning { background: rgba(234,179,8,0.15); color: #92400e; border: 1px solid rgba(234,179,8,0.25); }
+        .badge-info    { background: rgba(29,78,216,0.12); color: #1d4ed8; border: 1px solid rgba(29,78,216,0.22); }
         .badge-danger  { background: rgba(190,8,34,0.12); color: #BE0822; border: 1px solid rgba(190,8,34,0.20); }
 
         /* ── Animations ───────────────────────────────────────────── */

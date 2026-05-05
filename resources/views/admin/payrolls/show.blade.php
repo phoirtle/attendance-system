@@ -32,7 +32,7 @@
                     <div style="font-size:1.2rem;font-weight:700;color:#15803d;">{{ $calc['present_days'] + $calc['late_days'] }} days</div>
                 </div>
                 <div class="glass panel" style="padding:16px 18px;">
-                    <div style="font-size:0.78rem;color:rgba(107,34,50,0.55);margin-bottom:4px;">Absent Days</div>
+                    <div style="font-size:0.78rem;color:rgba(107,34,50,0.55);margin-bottom:4px;">Alpha Days</div>
                     <div style="font-size:1.2rem;font-weight:700;color:#BE0822;">{{ $calc['absent_days'] }} days</div>
                 </div>
                 <div class="glass panel" style="padding:16px 18px;">
@@ -51,7 +51,7 @@
                     <td style="padding:10px 0;text-align:right;font-weight:600;color:#BE0822;">{{ $payroll->alpha }} hari</td>
                 </tr>
                 <tr style="border-bottom:1px solid rgba(190,8,34,0.08);">
-                    <td style="padding:10px 0;">Deduction (Absent)</td>
+                    <td style="padding:10px 0;">Deduction (Alpha, 4.5% per day)</td>
                     <td style="padding:10px 0;text-align:right;font-weight:600;color:#BE0822;">- @rupiah($payroll->deduction)</td>
                 </tr>
                 <tr>

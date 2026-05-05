@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Attendance;
 use App\Models\Payroll;
 use App\Models\SalaryPosition;
 use App\Models\User;
-use App\Models\Attendance;
-use Illuminate\Http\Request;
+use App\Services\AttendanceAlphaService;
 use Carbon\Carbon;
-use Carbon\CarbonPeriod;
+use Illuminate\Http\Request;
 
 class PayrollController extends Controller
 {
-    /* ================================================================
-       ADMIN: Salary Positions (Daftar Gaji per Posisi)
-       ================================================================ */
+    private const STANDARD_WORK_DAYS = 22;
+    private const ALPHA_DEDUCTION_RATE = 0.045;
 
     public function salaryPositionsIndex()
     {
@@ -67,14 +66,10 @@ class PayrollController extends Controller
             ->with('success', 'Posisi salary berhasil dihapus.');
     }
 
-    /* ================================================================
-       ADMIN: Payroll / Slip Gaji
-       ================================================================ */
-
     public function payrollIndex(Request $request)
     {
         $month = $request->integer('month', now()->subMonth()->month);
-$year  = $request->integer('year', now()->subMonth()->year);
+        $year = $request->integer('year', now()->subMonth()->year);
         $department = $request->input('department');
 
         $query = Payroll::with(['employee', 'salaryPosition'])
@@ -82,12 +77,10 @@ $year  = $request->integer('year', now()->subMonth()->year);
             ->where('year', $year);
 
         if ($department) {
-            $query->whereHas('employee', function ($q) use ($department) {
-                $q->where('department', $department);
-            });
+            $query->whereHas('employee', fn ($q) => $q->where('department', $department));
         }
 
-        $payrolls    = $query->get();
+        $payrolls = $query->get();
         $departments = User::where('role', 'user')
             ->whereNotNull('department')
             ->distinct()
@@ -104,11 +97,9 @@ $year  = $request->integer('year', now()->subMonth()->year);
         ]);
 
         $month = $request->integer('month');
-        $year  = $request->integer('year');
-
-        // Blokir generate jika bulan yang dipilih adalah bulan berjalan atau masa depan
+        $year = $request->integer('year');
         $selected = Carbon::create($year, $month, 1)->startOfMonth();
-        $current  = Carbon::now()->startOfMonth();
+        $current = Carbon::now()->startOfMonth();
 
         if ($selected >= $current) {
             return redirect()->back()
@@ -122,9 +113,13 @@ $year  = $request->integer('year', now()->subMonth()->year);
             ->get();
 
         $generated = 0;
+
         foreach ($users as $user) {
             $position = $user->salaryPosition;
-            if (!$position) continue;
+
+            if (!$position) {
+                continue;
+            }
 
             $calc = $this->calculatePayroll($user, $position, $month, $year);
 
@@ -135,11 +130,11 @@ $year  = $request->integer('year', now()->subMonth()->year);
             ]);
 
             $payroll->salary_position_id = $position->id;
-            $payroll->base_salary        = $calc['base_salary'];
-            $payroll->alpha              = $calc['alpha'];
-            $payroll->deduction          = $calc['deduction'];
-            $payroll->total_salary       = $calc['total_salary'];
-            $payroll->status             = 'finalized';
+            $payroll->base_salary = $calc['base_salary'];
+            $payroll->alpha = $calc['alpha'];
+            $payroll->deduction = $calc['deduction'];
+            $payroll->total_salary = $calc['total_salary'];
+            $payroll->status = 'finalized';
             $payroll->save();
 
             $generated++;
@@ -163,14 +158,10 @@ $year  = $request->integer('year', now()->subMonth()->year);
         return view('admin.payrolls.print', compact('payroll', 'calc'));
     }
 
-    /* ================================================================
-       ADMIN: Recap Penggajian
-       ================================================================ */
-
     public function payrollRecap(Request $request)
     {
         $month = $request->integer('month', now()->month);
-        $year  = $request->integer('year', now()->year);
+        $year = $request->integer('year', now()->year);
 
         $payrolls = Payroll::with(['employee', 'salaryPosition'])
             ->where('month', $month)
@@ -178,31 +169,26 @@ $year  = $request->integer('year', now()->subMonth()->year);
             ->get();
 
         $totalExpense = $payrolls->sum('total_salary');
-
-        // Group by department
         $byDepartment = [];
-        foreach ($payrolls as $p) {
-            $dept                  = $p->employee->department ?? 'Tanpa Departemen';
-            $byDepartment[$dept]   = ($byDepartment[$dept] ?? 0) + $p->total_salary;
+
+        foreach ($payrolls as $payroll) {
+            $dept = $payroll->employee->department ?? 'Tanpa Departemen';
+            $byDepartment[$dept] = ($byDepartment[$dept] ?? 0) + $payroll->total_salary;
         }
 
         return view('admin.payrolls.recap', compact('payrolls', 'month', 'year', 'totalExpense', 'byDepartment'));
     }
 
-    /* ================================================================
-       EMPLOYEE: My Salary
-       ================================================================ */
-
     public function mySalary(Request $request)
     {
-        $user  = auth()->user();
+        $user = auth()->user();
         $month = $request->integer('month', now()->month);
-        $year  = $request->integer('year', now()->year);
+        $year = $request->integer('year', now()->year);
 
         $payrolls = $user->payrolls()
             ->with('salaryPosition')
-            ->when($request->filled('month'), fn($q) => $q->where('month', $month))
-            ->when($request->filled('year'),  fn($q) => $q->where('year', $year))
+            ->when($request->filled('month'), fn ($q) => $q->where('month', $month))
+            ->when($request->filled('year'), fn ($q) => $q->where('year', $year))
             ->orderBy('year', 'desc')
             ->orderBy('month', 'desc')
             ->get();
@@ -215,6 +201,7 @@ $year  = $request->integer('year', now()->subMonth()->year);
         if ($payroll->employee_id !== auth()->id()) {
             abort(403);
         }
+
         $payroll->load(['employee', 'salaryPosition']);
         $calc = $this->calculatePayroll($payroll->employee, $payroll->salaryPosition, $payroll->month, $payroll->year);
         return view('salary.show', compact('payroll', 'calc'));
@@ -225,88 +212,56 @@ $year  = $request->integer('year', now()->subMonth()->year);
         if ($payroll->employee_id !== auth()->id()) {
             abort(403);
         }
+
         $payroll->load(['employee', 'salaryPosition']);
         $calc = $this->calculatePayroll($payroll->employee, $payroll->salaryPosition, $payroll->month, $payroll->year);
         return view('salary.print', compact('payroll', 'calc'));
     }
 
-    /* ================================================================
-       PRIVATE: Payroll Calculation
-       ================================================================ */
-
     private function calculatePayroll(User $user, ?SalaryPosition $position, int $month, int $year): array
     {
         if (!$position) {
             return [
-                'base_salary'  => 0,
-                'alpha'        => 0,
-                'deduction'    => 0,
-                'total_salary' => 0,
-                'work_days'    => 0,
-                'present_days' => 0,
-                'late_days'    => 0,
-                'absent_days'  => 0,
-                'leave_days'   => 0,
+                'base_salary'         => 0,
+                'alpha'               => 0,
+                'deduction'           => 0,
+                'deduction_per_alpha' => 0,
+                'total_salary'        => 0,
+                'work_days'           => 0,
+                'present_days'        => 0,
+                'late_days'           => 0,
+                'absent_days'         => 0,
+                'leave_days'          => 0,
             ];
         }
 
-        $start = Carbon::create($year, $month, 1)->startOfMonth();
-        $end   = $start->copy()->endOfMonth();
+        app(AttendanceAlphaService::class)->markMissingForMonth($month, $year, $user);
 
-        // Hitung hari kerja (Senin–Sabtu, tidak termasuk Minggu)
-        $period   = CarbonPeriod::create($start, $end);
-        $workDays = 0;
-        foreach ($period as $date) {
-            if ($date->dayOfWeek !== Carbon::SUNDAY) {
-                $workDays++;
-            }
-        }
-
-        // Rekap kehadiran dari tabel attendance
         $attendances = Attendance::where('user_id', $user->id)
             ->whereMonth('date', $month)
             ->whereYear('date', $year)
             ->get();
 
-       $presentDays = $attendances->where('status', 'present')->count();
-$lateDays    = $attendances->where('status', 'late')->count();
-$absentDays  = $attendances->where('status', 'absent')->count();
-$leaveDays   = $attendances->where('status', 'leave')->count();
-$alphaDays   = $attendances->where('status', 'alpha')->count(); // tambah ini
-        // Hari kerja yang tidak ada record → cek apakah ada cuti disetujui, jika tidak = alpha
-        $recordedDates = $attendances->pluck('date')
-            ->map(fn($d) => $d->format('Y-m-d'))
-            ->toArray();
+        $presentDays = $attendances->where('status', 'present')->count();
+        $lateDays = $attendances->where('status', 'late')->count();
+        $leaveDays = $attendances->where('status', 'leave')->count();
+        $alphaDays = $attendances->whereIn('status', ['alpha', 'absent'])->count();
 
-        foreach ($period as $date) {
-    if ($date->dayOfWeek === Carbon::SUNDAY) continue;
-    $dStr = $date->format('Y-m-d');
-    if (!in_array($dStr, $recordedDates)) {
-        if ($user->hasApprovedLeaveForDate($date)) {
-            $leaveDays++;
-        } else {
-            $alphaDays++; // hari tidak ada record sama sekali juga alpha
-            $absentDays++;
-        }
-    }
-}
-
-  // Potongan = Rp 50.000 per hari alpha
-$deduction = $alphaDays * 50000;
-
-// Total gaji = gaji pokok - potongan
-$total = $position->base_salary - $deduction;
+        $deductionPerAlpha = (int) round($position->base_salary * self::ALPHA_DEDUCTION_RATE);
+        $deduction = $alphaDays * $deductionPerAlpha;
+        $total = $position->base_salary - $deduction;
 
         return [
-            'base_salary'  => $position->base_salary,
-            'alpha'        => $alphaDays,
-            'deduction'    => $deduction,
-            'total_salary' => max(0, $total),
-            'work_days'    => $workDays,
-            'present_days' => $presentDays,
-            'late_days'    => $lateDays,
-            'absent_days'  => $absentDays,
-            'leave_days'   => $leaveDays,
+            'base_salary'         => $position->base_salary,
+            'alpha'               => $alphaDays,
+            'deduction'           => $deduction,
+            'deduction_per_alpha' => $deductionPerAlpha,
+            'total_salary'        => max(0, $total),
+            'work_days'           => self::STANDARD_WORK_DAYS,
+            'present_days'        => $presentDays,
+            'late_days'           => $lateDays,
+            'absent_days'         => $alphaDays,
+            'leave_days'          => $leaveDays,
         ];
     }
 }

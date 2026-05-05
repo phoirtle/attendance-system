@@ -37,7 +37,7 @@
     @php
         $presentCount = $attendances->where('status', 'present')->count();
         $lateCount    = $attendances->where('status', 'late')->count();
-        $absentCount  = $attendances->where('status', 'absent')->count();
+        $absentCount  = $attendances->whereIn('status', ['absent', 'alpha'])->count();
         $totalDays    = $attendances->count();
     @endphp
 
@@ -56,7 +56,7 @@
         </div>
         <div class="glass panel" style="padding:18px;text-align:center;background:rgba(190,8,34,0.08);border-color:rgba(190,8,34,0.18);">
             <div style="font-size:1.6rem;font-weight:700;color:#BE0822;">{{ $absentCount }}</div>
-            <div style="font-size:0.75rem;color:rgba(190,8,34,0.65);margin-top:4px;">Absent</div>
+            <div style="font-size:0.75rem;color:rgba(190,8,34,0.65);margin-top:4px;">Alpha</div>
         </div>
     </div>
 
@@ -92,7 +92,7 @@
                     </td>
                     <td style="padding-right:24px;">
                         <span class="badge {{ $a->status === 'present' ? 'badge-success' : ($a->status === 'late' ? 'badge-warning' : ($a->status === 'leave' ? 'badge-info' : 'badge-danger')) }}">
-                            {{ ucfirst($a->status) }}
+                            {{ $a->status === 'alpha' ? 'Alpha' : ucfirst($a->status) }}
                         </span>
                     </td>
                 </tr>
