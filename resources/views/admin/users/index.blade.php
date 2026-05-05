@@ -175,6 +175,16 @@ const STAFF_DATA = @json($staffData);
 }
 .stat-box .stat-num { font-size:1.3rem; font-weight:700; color:#3d1a22; }
 .stat-box .stat-lbl { font-size:0.65rem; color:rgba(107,34,50,0.50); text-transform:uppercase; letter-spacing:0.05em; margin-top:2px; }
+
+.status-badge {
+    display:inline-block;
+    padding:2px 10px;
+    border-radius:20px;
+    font-size:0.72rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+}
 </style>
 
 <script>
@@ -218,10 +228,18 @@ function formatRupiah(num) {
     return 'Rp ' + Number(num).toLocaleString('id-ID');
 }
 
+function calcAge(birthStr) {
+    if (!birthStr) return null;
+    const b = new Date(birthStr);
+    if (isNaN(b)) return null;
+    const diff = Date.now() - b.getTime();
+    return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+}
+
 function renderPanel(id) {
-    const loading = document.getElementById('staffPanelLoading');
-    const content = document.getElementById('staffPanelContent');
-    const footer  = document.getElementById('staffPanelFooter');
+    const loading  = document.getElementById('staffPanelLoading');
+    const content  = document.getElementById('staffPanelContent');
+    const footer   = document.getElementById('staffPanelFooter');
     const editLink = document.getElementById('staffEditLink');
 
     loading.style.display = 'block';
@@ -236,8 +254,14 @@ function renderPanel(id) {
         ? `<img src="${d.photo_url}" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(190,8,34,0.25);">`
         : `<div style="width:64px;height:64px;border-radius:50%;background:rgba(190,8,34,0.10);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;color:#BE0822;">${d.initials}</div>`;
 
-    // Badge leave type
+    // Label helpers
     const leaveTypeLabel = { annual: 'Annual', sick: 'Sick', permission: 'Permission' };
+    const genderLabel    = { male: 'Laki-laki', female: 'Perempuan' };
+    const statusLabel    = { permanent: 'Karyawan Tetap', contract: 'Kontrak', intern: 'Magang' };
+    const statusColor    = { permanent: '#166534', contract: '#92400e', intern: '#1d4ed8' };
+
+    // Hitung umur
+    const age = calcAge(d.birth_date);
 
     // Baris riwayat cuti
     const leaveRows = d.recent_leaves.length
@@ -251,6 +275,18 @@ function renderPanel(id) {
     // Attendance stats bulan ini
     const att = d.attendance_this_month;
 
+    // Status badge HTML
+    const statusBadge = d.employment_status
+        ? `<span class="status-badge" style="background:${statusColor[d.employment_status]}18;color:${statusColor[d.employment_status]};">
+               ${statusLabel[d.employment_status] ?? d.employment_status}
+           </span>`
+        : '—';
+
+    // No HP dengan link WA
+    const phoneHtml = d.phone
+        ? `<a href="https://wa.me/${d.phone.replace(/\D/g,'')}" target="_blank" style="color:#BE0822;text-decoration:none;">${d.phone}</a>`
+        : '—';
+
     content.innerHTML = `
         {{-- Profil --}}
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:4px;">
@@ -262,7 +298,7 @@ function renderPanel(id) {
             </div>
         </div>
 
-        {{-- Info Umum --}}
+        {{-- Informasi --}}
         <div class="detail-section-title">Informasi</div>
         <div class="detail-row"><span class="detail-label">Posisi / Jabatan</span><span class="detail-value">${d.position}</span></div>
         <div class="detail-row"><span class="detail-label">Gaji Pokok</span><span class="detail-value">${d.base_salary !== null ? formatRupiah(d.base_salary) : '—'}</span></div>
@@ -271,6 +307,44 @@ function renderPanel(id) {
             <span class="detail-value" style="color:${d.remaining_leave <= 3 ? '#BE0822' : '#166534'};">
                 ${d.remaining_leave} / 12 hari
             </span>
+        </div>
+
+        {{-- Data Pribadi --}}
+        <div class="detail-section-title">Data Pribadi</div>
+        <div class="detail-row">
+            <span class="detail-label">No. HP / WhatsApp</span>
+            <span class="detail-value">${phoneHtml}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Tanggal Lahir</span>
+            <span class="detail-value">${d.birth_date ? `${d.birth_date}${age ? ' <span style="color:rgba(107,34,50,0.45);font-weight:400;font-size:0.78rem;"></span>' : ''}` : '—'}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Jenis Kelamin</span>
+            <span class="detail-value">${d.gender ? (genderLabel[d.gender] ?? d.gender) : '—'}</span>
+        </div>
+        <div class="detail-row" style="align-items:flex-start;">
+            <span class="detail-label">Alamat</span>
+            <span class="detail-value" style="max-width:65%;word-break:break-word;text-align:right;line-height:1.5;">${d.address ?? '—'}</span>
+        </div>
+
+        {{-- Data Kepegawaian --}}
+        <div class="detail-section-title">Data Kepegawaian</div>
+        <div class="detail-row">
+            <span class="detail-label">NIK Karyawan</span>
+            <span class="detail-value" style="font-family:monospace;letter-spacing:0.05em;">${d.employee_id_number ?? '—'}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Tanggal Mulai Kerja</span>
+            <span class="detail-value">${d.join_date ?? '—'}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Masa Kerja</span>
+            <span class="detail-value">${d.work_duration ?? '—'}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Status Karyawan</span>
+            <span class="detail-value">${statusBadge}</span>
         </div>
 
         {{-- Kehadiran Bulan Ini --}}

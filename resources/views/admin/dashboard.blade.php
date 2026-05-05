@@ -116,7 +116,7 @@
     </div>
 
     {{-- Quick links --}}
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:20px;">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px;">
         <a href="{{ route('admin.recap') }}" class="glass panel fade-in delay-3"
            style="text-decoration:none;display:flex;align-items:center;gap:14px;padding:18px 20px;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
             <div style="width:42px;height:42px;background:linear-gradient(135deg,#BE0822,#E86975);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">

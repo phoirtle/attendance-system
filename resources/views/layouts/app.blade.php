@@ -381,14 +381,9 @@
 
     <div class="nav-divider"></div>
 
-    {{-- Profile — admin ke users.edit diri sendiri, karyawan ke profile.show --}}
-    @if(auth()->user()->isAdmin())
-    <a href="{{ route('admin.users.edit', auth()->user()) }}"
-       class="nav-link {{ request()->is('admin/users/'.auth()->id().'/edit') ? 'active' : '' }}">
-    @else
+    {{-- Profile --}}
     <a href="{{ route('profile.show') }}"
        class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
-    @endif
         @if(auth()->user()->photo_path)
             <img src="{{ asset('storage/' . auth()->user()->photo_path) }}" alt="">
         @else

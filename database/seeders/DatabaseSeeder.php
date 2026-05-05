@@ -27,20 +27,27 @@ class DatabaseSeeder extends Seeder
 
         // ── Staff users ───────────────────────────────────────────────────
         $staff = [
-            ['Axkeisha Azura Alwaqar', 'axkeisha@gmail.com', 'Engineering'],
-            ['Careena Putri', 'careena@gmail.com', 'Marketing'],
-            ['Dea Amalia Rombon', 'dea@gmail.com', 'Finance'],
-            ['Arkan Syahputra', 'arkan@gmail.com', 'HR']
+            ['Axkeisha Azura Alwaqar', 'axkeisha@gmail.com', 'Engineering', '081234567890', 'Jl. Engineering 123', '1995-03-15', 'female', 'EMP-001', '2024-01-01', 'permanent'],
+            ['Careena Putri', 'careena@gmail.com', 'Marketing', '081234567891', 'Jl. Marketing 456', '1996-07-22', 'female', 'EMP-002', '2024-01-15', 'permanent'],
+            ['Dea Amalia Rombon', 'dea@gmail.com', 'Finance', '081234567892', 'Jl. Finance 789', '1994-11-30', 'female', 'EMP-003', '2023-12-01', 'permanent'],
+            ['Arkan Syahputra', 'arkan@gmail.com', 'HR', '081234567893', 'Jl. HR 101', '1993-05-10', 'male', 'EMP-004', '2023-11-20', 'permanent']
         ];
 
         $users = [];
-        foreach ($staff as [$name, $email, $dept]) {
+        foreach ($staff as [$name, $email, $dept, $phone, $address, $birth_date, $gender, $nik, $join_date, $status]) {
             $users[] = User::create([
-                'name'       => $name,
-                'email'      => $email,
-                'password'   => Hash::make('password'),
-                'role'       => 'user',
-                'department' => $dept,
+                'name'               => $name,
+                'email'              => $email,
+                'password'           => Hash::make('password'),
+                'role'               => 'user',
+                'department'         => $dept,
+                'phone'              => $phone,
+                'address'            => $address,
+                'birth_date'         => $birth_date,
+                'gender'             => $gender,
+                'employee_id_number' => $nik,
+                'join_date'          => $join_date,
+                'employment_status'  => $status,
             ]);
         }
 
