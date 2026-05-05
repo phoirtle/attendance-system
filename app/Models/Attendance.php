@@ -38,3 +38,4 @@ class Attendance extends Model
         return $this->clock_in > $workStart;
     }
 }
+  
