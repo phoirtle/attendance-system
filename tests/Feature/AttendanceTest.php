@@ -151,7 +151,7 @@ class AttendanceTest extends TestCase
 
         $response = $this->actingAs($admin)->get('/admin/recap/export?month=5&year=2026');
         $response->assertStatus(200);
-        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $response->assertHeader('Content-Type', 'text/csv; charset=utf-8');
     }
 
     public function test_haversine_distance_calculation(): void

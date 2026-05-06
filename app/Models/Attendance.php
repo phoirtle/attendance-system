@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Carbon;
 
 class Attendance extends Model
 {
@@ -20,6 +21,13 @@ class Attendance extends Model
     protected $casts = [
         'date' => 'date',
     ];
+
+    public function setDateAttribute($value): void
+    {
+        $this->attributes['date'] = $value instanceof Carbon
+            ? $value->toDateString()
+            : Carbon::parse($value)->toDateString();
+    }
 
     public function user()
     {

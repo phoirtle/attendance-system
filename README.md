@@ -210,27 +210,10 @@ Result in **meters**. If `$distance > OFFICE_RADIUS_METERS` → **block with 422
 
 ---
 
-## 🔧 Tailwind Config (in `<script>` tag)
+## 🔧 Frontend Styling
 
-```js
-tailwind.config = {
-    theme: {
-        extend: {
-            colors: {
-                rose:  { DEFAULT: '#E86975', dark: '#BE0822', light: '#EFAAB0' },
-                blush: { DEFAULT: '#FD9898' },
-                cream: { DEFAULT: '#EED7C8' },
-                ivory: { DEFAULT: '#FFF9F5' },
-                ruby:  { DEFAULT: '#BE0822' },
-            },
-            fontFamily: {
-                sans:    ['"DM Sans"', 'system-ui'],
-                display: ['"Playfair Display"', 'serif'],
-            }
-        }
-    }
-}
-```
+The app uses plain CSS from `public/css/app.css` plus page-level Blade styles.
+There is no Tailwind CSS, PostCSS, or Vite build step required for the UI.
 
 ---
 
