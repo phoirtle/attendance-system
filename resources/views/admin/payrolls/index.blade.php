@@ -2,6 +2,49 @@
 @section('title', 'Employee Payrolls — Heartstrings')
 
 @section('content')
+<style>
+    .payroll-table {
+        table-layout: fixed;
+        min-width: 1120px;
+    }
+
+    .payroll-table th,
+    .payroll-table td {
+        vertical-align: middle;
+    }
+
+    .payroll-table .col-employee { width: 210px; }
+    .payroll-table .col-position { width: 145px; }
+    .payroll-table .col-department { width: 120px; }
+    .payroll-table .col-money { width: 135px; text-align: right; }
+    .payroll-table .col-alpha { width: 85px; text-align: center; }
+    .payroll-table .col-status { width: 110px; text-align: center; }
+    .payroll-table .col-actions { width: 155px; text-align: right; }
+
+    .payroll-money {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        text-align: right;
+    }
+
+    .payroll-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        white-space: nowrap;
+    }
+
+    .payroll-action-btn {
+        min-width: 58px;
+        padding: 6px 12px !important;
+        border-radius: 8px !important;
+        font-size: 0.78rem !important;
+        line-height: 1.1;
+        text-decoration: none;
+    }
+</style>
+
 <div style="max-width:1100px;margin:0 auto;padding:24px 20px 48px;">
 
     <div class="fade-in" style="margin-bottom:28px;">
@@ -58,17 +101,17 @@
 
     <div class="glass-strong panel fade-in delay-2" style="background:rgba(255,249,245,0.60);padding:0;overflow:hidden;">
         <div style="overflow-x:auto;">
-            <table class="data-table" style="min-width:800px;">
+            <table class="data-table payroll-table">
                 <thead><tr>
-                    <th style="padding-left:24px;">Employee</th>
-                    <th>Position</th>
-                    <th>Department</th>
-<th>Base Salary</th>
-                    <th>Alpha</th>
-                    <th>Deduction</th>
-                    <th>Total</th>
-                    <th>Status</th>
-                    <th style="padding-right:24px;text-align:right;">Actions</th>
+                    <th class="col-employee" style="padding-left:24px;">Employee</th>
+                    <th class="col-position">Position</th>
+                    <th class="col-department">Department</th>
+                    <th class="col-money">Base Salary</th>
+                    <th class="col-alpha">Alpha</th>
+                    <th class="col-money">Deduction</th>
+                    <th class="col-money">Total</th>
+                    <th class="col-status">Status</th>
+                    <th class="col-actions" style="padding-right:24px;">Actions</th>
                 </tr></thead>
                 <tbody>
                 @forelse($payrolls as $p)
@@ -76,20 +119,22 @@
                     <td style="padding-left:24px;font-weight:600;">{{ $p->employee->name ?? '—' }}</td>
                     <td>{{ $p->salaryPosition->position_name ?? '—' }}</td>
                     <td>{{ $p->employee->department ?? '—' }}</td>
-                    <td>@rupiah($p->base_salary)</td>
-<td>{{ $p->alpha }} hari</td>
-                    <td style="color:#BE0822;">@rupiah($p->deduction)</td>
-                    <td style="font-weight:700;color:#3d1a22;">@rupiah($p->total_salary)</td>
-                    <td>
+                    <td class="payroll-money">@rupiah($p->base_salary)</td>
+                    <td style="text-align:center;white-space:nowrap;">{{ $p->alpha }} hari</td>
+                    <td class="payroll-money" style="color:#BE0822;">@rupiah($p->deduction)</td>
+                    <td class="payroll-money" style="font-weight:700;color:#3d1a22;">@rupiah($p->total_salary)</td>
+                    <td style="text-align:center;">
                         @if($p->status === 'finalized')
                             <span class="badge badge-success">Finalized</span>
                         @else
                             <span class="badge badge-warning">Draft</span>
                         @endif
                     </td>
-                    <td style="padding-right:24px;text-align:right;">
-                        <a href="{{ route('admin.payrolls.show', $p) }}" class="btn-outline" style="text-decoration:none;padding:6px 14px;font-size:0.78rem;border-radius:8px;margin-right:6px;">View</a>
-                        <a href="{{ route('admin.payrolls.print', $p) }}" target="_blank" class="btn-outline" style="text-decoration:none;padding:6px 14px;font-size:0.78rem;border-radius:8px;">Print</a>
+                    <td style="padding-right:24px;">
+                        <div class="payroll-actions">
+                            <a href="{{ route('admin.payrolls.show', $p) }}" class="btn-outline payroll-action-btn">View</a>
+                            <a href="{{ route('admin.payrolls.print', $p) }}" target="_blank" class="btn-outline payroll-action-btn">Print</a>
+                        </div>
                     </td>
                 </tr>
                 @empty

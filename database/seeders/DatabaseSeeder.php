@@ -71,10 +71,14 @@ class DatabaseSeeder extends Seeder
         }
 
         $lastMonth = Carbon::today()->subMonthNoOverflow();
+        $currentMonth = Carbon::today();
         $this->seedApprovedLeaves($users, $lastMonth);
-        $this->seedLastMonthAttendances($users, $lastMonth);
+        $this->seedCurrentMonthLeaves($users, $currentMonth);
+        $this->seedAttendancesForMonth($users, $lastMonth);
+        $this->seedAttendancesForMonth($users, $currentMonth, Carbon::yesterday());
+        $this->seedTodayClockIns($users);
 
-        $this->command->info('Seeded admin + 10 staff users with complete profiles and last-month attendance history.');
+        $this->command->info('Seeded admin + 10 staff users with complete profiles, historical attendance, and today clock-ins.');
         $this->command->info('Admin login : admin@gmail.com / password');
         $this->command->info('User login  : dea@gmail.com / password');
     }
@@ -109,11 +113,47 @@ class DatabaseSeeder extends Seeder
         }
     }
 
-    private function seedLastMonthAttendances(array $users, Carbon $lastMonth): void
+    private function seedCurrentMonthLeaves(array $users, Carbon $currentMonth): void
+    {
+        if (Carbon::yesterday()->lessThan($currentMonth->copy()->startOfMonth())) {
+            return;
+        }
+
+        $approvedLeaves = [
+            'EMP-005' => ['type' => 'annual', 'day' => 1, 'reason' => 'Early month personal leave'],
+            'EMP-008' => ['type' => 'permission', 'day' => 3, 'reason' => 'Bank administration permit'],
+        ];
+
+        $workdays = $this->elapsedWorkdays($currentMonth, Carbon::yesterday());
+
+        foreach ($users as $user) {
+            $leaveConfig = $approvedLeaves[$user->employee_id_number] ?? null;
+
+            if (!$leaveConfig || !isset($workdays[$leaveConfig['day'] - 1])) {
+                continue;
+            }
+
+            $date = $workdays[$leaveConfig['day'] - 1]->copy();
+
+            Leave::create([
+                'user_id' => $user->id,
+                'type' => $leaveConfig['type'],
+                'start_date' => $date->toDateString(),
+                'end_date' => $date->toDateString(),
+                'reason' => $leaveConfig['reason'],
+                'status' => 'approved',
+                'admin_note' => 'Seeded approved leave for current month demo data.',
+            ]);
+        }
+    }
+
+    private function seedAttendancesForMonth(array $users, Carbon $month, ?Carbon $until = null): void
     {
         foreach ($users as $user) {
-            $cursor = $lastMonth->copy()->startOfMonth();
-            $endOfMonth = $lastMonth->copy()->endOfMonth();
+            $cursor = $month->copy()->startOfMonth();
+            $endOfMonth = $until
+                ? $until->copy()->min($month->copy()->endOfMonth())
+                : $month->copy()->endOfMonth();
             $workdayIndex = 0;
 
             while ($cursor->lte($endOfMonth)) {
@@ -126,7 +166,7 @@ class DatabaseSeeder extends Seeder
 
                 $workdayIndex++;
                 $isLeave = $user->hasApprovedLeaveForDate($date);
-                $isAlpha = !$isLeave && (($workdayIndex + $user->id) % 11 === 0);
+                $isAlpha = !$isLeave && $workdayIndex > 3 && (($workdayIndex + $user->id) % 13 === 0);
                 $isLate = !$isLeave && !$isAlpha && (($workdayIndex + $user->id) % 5 === 0);
 
                 if ($isLeave || $isAlpha) {
@@ -164,9 +204,57 @@ class DatabaseSeeder extends Seeder
                     'distance_meters' => $distance,
                     'location_status' => 'in_range',
                     'status' => $isLate ? 'late' : 'present',
-                    'notes' => 'Seeded attendance for last month',
+                    'notes' => $month->isSameMonth(today())
+                        ? 'Seeded attendance for current month'
+                        : 'Seeded attendance for last month',
                 ]);
             }
+        }
+    }
+
+    private function elapsedWorkdays(Carbon $month, Carbon $until): array
+    {
+        $workdays = [];
+        $cursor = $month->copy()->startOfMonth();
+        $end = $until->copy()->min($month->copy()->endOfMonth());
+
+        while ($cursor->lte($end)) {
+            if ($cursor->isWeekday()) {
+                $workdays[] = $cursor->copy();
+            }
+
+            $cursor->addDay();
+        }
+
+        return $workdays;
+    }
+
+    private function seedTodayClockIns(array $users): void
+    {
+        $today = Carbon::today();
+
+        if ($today->isWeekend()) {
+            return;
+        }
+
+        foreach ($users as $index => $user) {
+            $isLate = $index % 4 === 0;
+            $clockInH = $isLate ? 9 : 8;
+            $clockInM = $isLate ? 12 + ($index % 20) : 4 + ($index % 35);
+            $distance = 15 + (($index * 9) % 70);
+
+            Attendance::create([
+                'user_id' => $user->id,
+                'date' => $today->toDateString(),
+                'clock_in' => sprintf('%02d:%02d:00', $clockInH, $clockInM),
+                'clock_out' => null,
+                'clock_in_latitude' => -3.21948078 + ((($index % 7) - 3) / 100000),
+                'clock_in_longitude' => 104.65116482 + ((($index % 5) - 2) / 100000),
+                'distance_meters' => $distance,
+                'location_status' => 'in_range',
+                'status' => $isLate ? 'late' : 'present',
+                'notes' => 'Seeded clock-in for today; clock-out is still pending.',
+            ]);
         }
     }
 }
