@@ -41,19 +41,19 @@
     <table class="details">
         <tr>
             <td>Base Salary</td>
-            <td>Rp {{ number_format($payroll->base_salary, 0, ',', '.') }}</td>
+            <td>Rp {{ number_format($calc['base_salary'], 0, ',', '.') }}</td>
         </tr>
 <tr>
             <td>Alpha (Hari Tidak Hadir)</td>
-            <td style="color:#BE0822;">{{ $payroll->alpha }} hari</td>
+            <td style="color:#BE0822;">{{ $calc['alpha'] }} hari</td>
         </tr>
         <tr>
             <td>Deduction (Alpha: {{ $calc['absent_days'] }} days x 4.5% base salary)</td>
-            <td style="color:#BE0822;">- Rp {{ number_format($payroll->deduction, 0, ',', '.') }}</td>
+            <td style="color:#BE0822;">- Rp {{ number_format($calc['deduction'], 0, ',', '.') }}</td>
         </tr>
         <tr class="total">
             <td>Total Take-Home Pay</td>
-            <td>Rp {{ number_format($payroll->total_salary, 0, ',', '.') }}</td>
+            <td>Rp {{ number_format($calc['total_salary'], 0, ',', '.') }}</td>
         </tr>
     </table>
 
@@ -67,7 +67,6 @@
         Heartstrings Attendance System
     </div>
 
-    <script>window.onload = () => window.print();</script>
 </body>
 </html>
 

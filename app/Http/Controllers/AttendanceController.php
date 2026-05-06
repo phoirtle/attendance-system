@@ -38,6 +38,7 @@ class AttendanceController extends Controller
     public function index()
     {
         $user       = auth()->user();
+        $this->deleteTodayDemoAttendance($user);
         $attendance = $user->todayAttendance();
         return view('attendance.index', compact('user', 'attendance'));
     }
@@ -83,7 +84,7 @@ class AttendanceController extends Controller
             ], 422);
         }
 
-        if (!$attendance) {
+        if (!$attendance || !$attendance->clock_in) {
             if ($distance > $this->maxDistance()) {
                 return response()->json([
                     'success'  => false,
@@ -93,17 +94,15 @@ class AttendanceController extends Controller
             }
         }
 
-        $photoPath = $this->saveBase64Photo($request->photo, 'clock_in');
-
         $now       = Carbon::now();
         $workStart = Carbon::today()->setHour(9);
         $status    = $now->greaterThan($workStart) ? 'late' : 'present';
         $locStatus = $distance <= $this->maxDistance() ? 'in_range' : 'out_of_range';
 
-        if (!$attendance) {
-            $attendance = Attendance::create([
-                'user_id'            => $user->id,
-                'date'               => today(),
+        if (!$attendance || !$attendance->clock_in) {
+            $photoPath = $this->saveBase64Photo($request->photo, 'clock_in');
+
+            $payload = [
                 'clock_in'           => $now->format('H:i:s'),
                 'clock_in_latitude'  => $lat,
                 'clock_in_longitude' => $lon,
@@ -111,7 +110,19 @@ class AttendanceController extends Controller
                 'photo_path'         => $photoPath,
                 'location_status'    => $locStatus,
                 'status'             => $status,
-            ]);
+                'notes'              => null,
+            ];
+
+            if ($attendance) {
+                $attendance->update($payload);
+            } else {
+                $attendance = Attendance::create([
+                    'user_id' => $user->id,
+                    'date'    => today(),
+                    ...$payload,
+                ]);
+            }
+
             $message = "Clocked in successfully at {$now->format('H:i')}!";
         } else {
             $clockOutPhoto = $this->saveBase64Photo($request->photo, 'clock_out');
@@ -496,5 +507,17 @@ class AttendanceController extends Controller
         Storage::disk('public')->put($path, $decoded);
 
         return $path;
+    }
+
+    private function deleteTodayDemoAttendance(User $user): void
+    {
+        Attendance::where('user_id', $user->id)
+            ->whereDate('date', today())
+            ->whereNotNull('clock_in')
+            ->whereNotNull('clock_out')
+            ->whereNull('photo_path')
+            ->whereNull('clock_out_photo_path')
+            ->whereNull('notes')
+            ->delete();
     }
 }
