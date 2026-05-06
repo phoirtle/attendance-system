@@ -14,8 +14,6 @@
 
     {{-- Filter controls --}}
     <div class="glass-strong panel fade-in delay-1" style="background:rgba(238,215,200,0.40);margin-bottom:20px;">
-        <div style="position:absolute;top:14px;right:16px;font-size:0.68rem;font-weight:700;letter-spacing:0.08em;color:rgba(190,8,34,0.40);">#EED7C8</div>
-        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-style:italic;color:#BE0822;margin-bottom:16px;">vintage lace</div>
 
         <form method="GET" action="{{ route('admin.recap') }}" style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;">
             {{-- Month picker --}}
