@@ -12,6 +12,10 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+
+    $this->call([
+    PositionSeeder::class,
+]);
         // ── Admin user ────────────────────────────────────────────────────
         $admin = User::create([
             'name'       => 'Admin Heartstrings',
@@ -46,6 +50,8 @@ class DatabaseSeeder extends Seeder
                 'employment_status'  => $status,
             ]);
         }
+
+        
 
         // ── Seed attendance records (last 30 days) ────────────────────────
         foreach ($users as $user) {
