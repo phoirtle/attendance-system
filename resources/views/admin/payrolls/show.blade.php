@@ -44,19 +44,19 @@
             <table style="width:100%;font-size:0.9rem;color:#3d1a22;margin-bottom:20px;border-collapse:collapse;">
                 <tr style="border-bottom:1px solid rgba(190,8,34,0.08);">
                     <td style="padding:10px 0;">Base Salary</td>
-                    <td style="padding:10px 0;text-align:right;font-weight:600;">@rupiah($payroll->base_salary)</td>
+                    <td style="padding:10px 0;text-align:right;font-weight:600;">@rupiah($calc['base_salary'])</td>
                 </tr>
 <tr style="border-bottom:1px solid rgba(190,8,34,0.08);">
                     <td style="padding:10px 0;">Alpha (Hari Tidak Hadir)</td>
-                    <td style="padding:10px 0;text-align:right;font-weight:600;color:#BE0822;">{{ $payroll->alpha }} hari</td>
+                    <td style="padding:10px 0;text-align:right;font-weight:600;color:#BE0822;">{{ $calc['alpha'] }} hari</td>
                 </tr>
                 <tr style="border-bottom:1px solid rgba(190,8,34,0.08);">
                     <td style="padding:10px 0;">Deduction (Alpha, 4.5% per day)</td>
-                    <td style="padding:10px 0;text-align:right;font-weight:600;color:#BE0822;">- @rupiah($payroll->deduction)</td>
+                    <td style="padding:10px 0;text-align:right;font-weight:600;color:#BE0822;">- @rupiah($calc['deduction'])</td>
                 </tr>
                 <tr>
                     <td style="padding:14px 0;font-size:1.05rem;font-weight:700;">Total Take-Home Pay</td>
-                    <td style="padding:14px 0;text-align:right;font-size:1.15rem;font-weight:800;color:#BE0822;">@rupiah($payroll->total_salary)</td>
+                    <td style="padding:14px 0;text-align:right;font-size:1.15rem;font-weight:800;color:#BE0822;">@rupiah($calc['total_salary'])</td>
                 </tr>
             </table>
 

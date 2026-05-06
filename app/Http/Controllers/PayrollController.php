@@ -7,6 +7,7 @@ use App\Models\Payroll;
 use App\Models\SalaryPosition;
 use App\Models\User;
 use App\Services\AttendanceAlphaService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -81,6 +82,8 @@ class PayrollController extends Controller
         }
 
         $payrolls = $query->get();
+        $this->syncPayrollCollection($payrolls);
+
         $departments = User::where('role', 'user')
             ->whereNotNull('department')
             ->distinct()
@@ -148,6 +151,8 @@ class PayrollController extends Controller
     {
         $payroll->load(['employee', 'salaryPosition']);
         $calc = $this->calculatePayroll($payroll->employee, $payroll->salaryPosition, $payroll->month, $payroll->year);
+        $this->syncPayrollSnapshot($payroll, $calc);
+
         return view('admin.payrolls.show', compact('payroll', 'calc'));
     }
 
@@ -155,7 +160,11 @@ class PayrollController extends Controller
     {
         $payroll->load(['employee', 'salaryPosition']);
         $calc = $this->calculatePayroll($payroll->employee, $payroll->salaryPosition, $payroll->month, $payroll->year);
-        return view('admin.payrolls.print', compact('payroll', 'calc'));
+        $this->syncPayrollSnapshot($payroll, $calc);
+
+        return Pdf::loadView('admin.payrolls.print', compact('payroll', 'calc'))
+            ->setPaper('a4')
+            ->stream($this->payrollFilename($payroll));
     }
 
     public function payrollRecap(Request $request)
@@ -167,6 +176,7 @@ class PayrollController extends Controller
             ->where('month', $month)
             ->where('year', $year)
             ->get();
+        $this->syncPayrollCollection($payrolls);
 
         $totalExpense = $payrolls->sum('total_salary');
         $byDepartment = [];
@@ -192,6 +202,7 @@ class PayrollController extends Controller
             ->orderBy('year', 'desc')
             ->orderBy('month', 'desc')
             ->get();
+        $this->syncPayrollCollection($payrolls);
 
         return view('salary.index', compact('user', 'payrolls', 'month', 'year'));
     }
@@ -204,6 +215,8 @@ class PayrollController extends Controller
 
         $payroll->load(['employee', 'salaryPosition']);
         $calc = $this->calculatePayroll($payroll->employee, $payroll->salaryPosition, $payroll->month, $payroll->year);
+        $this->syncPayrollSnapshot($payroll, $calc);
+
         return view('salary.show', compact('payroll', 'calc'));
     }
 
@@ -215,7 +228,11 @@ class PayrollController extends Controller
 
         $payroll->load(['employee', 'salaryPosition']);
         $calc = $this->calculatePayroll($payroll->employee, $payroll->salaryPosition, $payroll->month, $payroll->year);
-        return view('salary.print', compact('payroll', 'calc'));
+        $this->syncPayrollSnapshot($payroll, $calc);
+
+        return Pdf::loadView('salary.print', compact('payroll', 'calc'))
+            ->setPaper('a4')
+            ->stream($this->payrollFilename($payroll));
     }
 
     private function calculatePayroll(User $user, ?SalaryPosition $position, int $month, int $year): array
@@ -263,5 +280,40 @@ class PayrollController extends Controller
             'absent_days'         => $alphaDays,
             'leave_days'          => $leaveDays,
         ];
+    }
+
+    private function syncPayrollCollection($payrolls): void
+    {
+        $payrolls->each(function (Payroll $payroll) {
+            $payroll->loadMissing(['employee', 'salaryPosition']);
+            $calc = $this->calculatePayroll($payroll->employee, $payroll->salaryPosition, $payroll->month, $payroll->year);
+            $this->syncPayrollSnapshot($payroll, $calc);
+        });
+    }
+
+    private function syncPayrollSnapshot(Payroll $payroll, array $calc): void
+    {
+        $payroll->fill([
+            'base_salary'  => $calc['base_salary'],
+            'alpha'        => $calc['alpha'],
+            'deduction'    => $calc['deduction'],
+            'total_salary' => $calc['total_salary'],
+        ]);
+
+        if ($payroll->isDirty(['base_salary', 'alpha', 'deduction', 'total_salary'])) {
+            $payroll->save();
+        }
+    }
+
+    private function payrollFilename(Payroll $payroll): string
+    {
+        $employee = str($payroll->employee->name)
+            ->lower()
+            ->replaceMatches('/[^a-z0-9]+/', '-')
+            ->trim('-');
+
+        $period = Carbon::create($payroll->year, $payroll->month, 1)->format('Y-m');
+
+        return "slip-gaji-{$employee}-{$period}.pdf";
     }
 }
