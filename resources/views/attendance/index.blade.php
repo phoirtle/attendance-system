@@ -6,11 +6,11 @@
 
     {{-- Page header --}}
     <div class="fade-in" style="margin-bottom:28px;">
-        <p style="font-size:0.8rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(107,34,50,0.55);margin:0 0 4px;">
+        <p id="liveDateTime" style="font-size:0.8rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(107,34,50,0.55);margin:0 0 4px;">
             {{ now()->format('l, d F Y') }}
         </p>
         <h1 style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:600;color:#3d1a22;margin:0;letter-spacing:-0.02em;">
-            Good {{ now()->hour < 12 ? 'Morning' : (now()->hour < 17 ? 'Afternoon' : 'Evening') }},
+            <span id="liveGreeting">Good {{ now()->hour < 12 ? 'Morning' : (now()->hour < 17 ? 'Afternoon' : 'Evening') }}</span>,
             <em>{{ Str::words(auth()->user()->name, 1, '') }}</em>
         </h1>
     </div>
@@ -180,6 +180,8 @@ const OFFICE_LAT  = parseFloat(document.querySelector('meta[name="office-latitud
 const OFFICE_LNG  = parseFloat(document.querySelector('meta[name="office-longitude"]').content);
 const MAX_DIST    = parseInt(document.querySelector('meta[name="office-radius"]').content, 10);
 const CSRF        = document.querySelector('meta[name="csrf-token"]').content;
+const SERVER_NOW  = new Date('{{ now()->toIso8601String() }}');
+const CLIENT_BOOT = Date.now();
 
 let userLat = null, userLng = null, userDist = null;
 let cameraStream = null;
@@ -347,8 +349,32 @@ function showFeedback(msg, success) {
     el.style.display = 'block';
 }
 
+function updateLiveClock() {
+    const now = new Date(SERVER_NOW.getTime() + (Date.now() - CLIENT_BOOT));
+    const hour = now.getHours();
+    const greeting = hour < 12 ? 'Good Morning' : (hour < 17 ? 'Good Afternoon' : 'Good Evening');
+    const formatted = new Intl.DateTimeFormat('en-US', {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+        timeZone: 'Asia/Jakarta',
+    }).format(now);
+
+    document.getElementById('liveDateTime').textContent = formatted;
+    document.getElementById('liveGreeting').textContent = greeting;
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', initGPS);
+document.addEventListener('DOMContentLoaded', () => {
+    updateLiveClock();
+    setInterval(updateLiveClock, 1000);
+    initGPS();
+});
 </script>
 <style>
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Attendance;
 use App\Models\Leave;
+use App\Models\Payroll;
 use App\Models\SalaryPosition;
 use App\Models\User;
 use Carbon\Carbon;
@@ -21,21 +22,23 @@ class DatabaseSeeder extends Seeder
         $positions = SalaryPosition::all()
             ->keyBy(fn (SalaryPosition $position) => $position->department . '|' . $position->position_name);
 
-        User::create([
-            'name' => 'Admin Heartstrings',
-            'email' => 'admin@gmail.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-            'department' => 'Management',
-            'phone' => '081234567800',
-            'address' => 'Jl. Management 1, Palembang',
-            'birth_date' => '1990-02-11',
-            'gender' => 'female',
-            'employee_id_number' => 'ADM-001',
-            'join_date' => '2023-01-01',
-            'employment_status' => 'permanent',
-            'salary_position_id' => $positions->get('Management|Manager')?->id,
-        ]);
+        User::updateOrCreate(
+            ['email' => 'admin@gmail.com'],
+            [
+                'name' => 'Admin Heartstrings',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'department' => 'Management',
+                'phone' => '081234567800',
+                'address' => 'Jl. Management 1, Palembang',
+                'birth_date' => '1990-02-11',
+                'gender' => 'female',
+                'employee_id_number' => 'ADM-001',
+                'join_date' => '2023-01-01',
+                'employment_status' => 'permanent',
+                'salary_position_id' => $positions->get('Management|Manager')?->id,
+            ]
+        );
 
         $staff = [
             ['Axkeisha Azura Alwaqar', 'axkeisha@gmail.com', 'Engineering', 'Senior Staff', '081234567890', 'Jl. Engineering 123, Palembang', '1995-03-15', 'female', 'EMP-001', '2024-01-01', 'permanent'],
@@ -53,32 +56,36 @@ class DatabaseSeeder extends Seeder
         $users = [];
 
         foreach ($staff as [$name, $email, $department, $positionName, $phone, $address, $birthDate, $gender, $employeeNumber, $joinDate, $employmentStatus]) {
-            $users[] = User::create([
-                'name' => $name,
-                'email' => $email,
-                'password' => Hash::make('password'),
-                'role' => 'user',
-                'department' => $department,
-                'phone' => $phone,
-                'address' => $address,
-                'birth_date' => $birthDate,
-                'gender' => $gender,
-                'employee_id_number' => $employeeNumber,
-                'join_date' => $joinDate,
-                'employment_status' => $employmentStatus,
-                'salary_position_id' => $positions->get($department . '|' . $positionName)?->id,
-            ]);
+            $users[] = User::updateOrCreate(
+                ['email' => $email],
+                [
+                    'name' => $name,
+                    'password' => Hash::make('password'),
+                    'role' => 'user',
+                    'department' => $department,
+                    'phone' => $phone,
+                    'address' => $address,
+                    'birth_date' => $birthDate,
+                    'gender' => $gender,
+                    'employee_id_number' => $employeeNumber,
+                    'join_date' => $joinDate,
+                    'employment_status' => $employmentStatus,
+                    'salary_position_id' => $positions->get($department . '|' . $positionName)?->id,
+                ]
+            );
         }
 
         $lastMonth = Carbon::today()->subMonthNoOverflow();
         $currentMonth = Carbon::today();
+
         $this->seedApprovedLeaves($users, $lastMonth);
         $this->seedCurrentMonthLeaves($users, $currentMonth);
         $this->seedAttendancesForMonth($users, $lastMonth);
         $this->seedAttendancesForMonth($users, $currentMonth, Carbon::yesterday());
         $this->seedTodayClockIns($users);
+        $this->seedPayrolls($users);
 
-        $this->command->info('Seeded admin + 10 staff users with complete profiles, historical attendance, and today clock-ins.');
+        $this->command->info('Seeded admin + 10 staff users with complete profiles, attendance history, today clock-ins, and payroll data.');
         $this->command->info('Admin login : admin@gmail.com / password');
         $this->command->info('User login  : dea@gmail.com / password');
     }
@@ -101,15 +108,19 @@ class DatabaseSeeder extends Seeder
             $start = $leaveConfig['start']->copy();
             $end = $start->copy()->addWeekdays($leaveConfig['days'] - 1);
 
-            Leave::create([
-                'user_id' => $user->id,
-                'type' => $leaveConfig['type'],
-                'start_date' => $start->toDateString(),
-                'end_date' => $end->toDateString(),
-                'reason' => $leaveConfig['reason'],
-                'status' => 'approved',
-                'admin_note' => 'Seeded approved leave for demo data.',
-            ]);
+            Leave::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'start_date' => $start->toDateString(),
+                    'end_date' => $end->toDateString(),
+                    'type' => $leaveConfig['type'],
+                ],
+                [
+                    'reason' => $leaveConfig['reason'],
+                    'status' => 'approved',
+                    'admin_note' => 'Seeded approved leave for demo data.',
+                ]
+            );
         }
     }
 
@@ -135,15 +146,19 @@ class DatabaseSeeder extends Seeder
 
             $date = $workdays[$leaveConfig['day'] - 1]->copy();
 
-            Leave::create([
-                'user_id' => $user->id,
-                'type' => $leaveConfig['type'],
-                'start_date' => $date->toDateString(),
-                'end_date' => $date->toDateString(),
-                'reason' => $leaveConfig['reason'],
-                'status' => 'approved',
-                'admin_note' => 'Seeded approved leave for current month demo data.',
-            ]);
+            Leave::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'start_date' => $date->toDateString(),
+                    'end_date' => $date->toDateString(),
+                    'type' => $leaveConfig['type'],
+                ],
+                [
+                    'reason' => $leaveConfig['reason'],
+                    'status' => 'approved',
+                    'admin_note' => 'Seeded approved leave for current month demo data.',
+                ]
+            );
         }
     }
 
@@ -170,18 +185,22 @@ class DatabaseSeeder extends Seeder
                 $isLate = !$isLeave && !$isAlpha && (($workdayIndex + $user->id) % 5 === 0);
 
                 if ($isLeave || $isAlpha) {
-                    Attendance::create([
-                        'user_id' => $user->id,
-                        'date' => $date->toDateString(),
-                        'clock_in' => null,
-                        'clock_out' => null,
-                        'clock_in_latitude' => null,
-                        'clock_in_longitude' => null,
-                        'distance_meters' => null,
-                        'location_status' => $isLeave ? 'in_range' : 'out_of_range',
-                        'status' => $isLeave ? 'leave' : 'alpha',
-                        'notes' => $isLeave ? 'Approved leave' : 'Seeded alpha record',
-                    ]);
+                    Attendance::updateOrCreate(
+                        [
+                            'user_id' => $user->id,
+                            'date' => $date->toDateString(),
+                        ],
+                        [
+                            'clock_in' => null,
+                            'clock_out' => null,
+                            'clock_in_latitude' => null,
+                            'clock_in_longitude' => null,
+                            'distance_meters' => null,
+                            'location_status' => $isLeave ? 'in_range' : 'out_of_range',
+                            'status' => $isLeave ? 'leave' : 'alpha',
+                            'notes' => $isLeave ? 'Approved leave' : 'Seeded alpha record',
+                        ]
+                    );
 
                     continue;
                 }
@@ -194,20 +213,24 @@ class DatabaseSeeder extends Seeder
                 $clockOutM = 5 + (($workdayIndex * 3 + $user->id) % 50);
                 $distance = 12 + (($workdayIndex * 7 + $user->id) % 80);
 
-                Attendance::create([
-                    'user_id' => $user->id,
-                    'date' => $date->toDateString(),
-                    'clock_in' => sprintf('%02d:%02d:00', $clockInH, $clockInM),
-                    'clock_out' => sprintf('%02d:%02d:00', $clockOutH, $clockOutM),
-                    'clock_in_latitude' => -3.21948078 + ((($workdayIndex % 9) - 4) / 100000),
-                    'clock_in_longitude' => 104.65116482 + ((($user->id % 9) - 4) / 100000),
-                    'distance_meters' => $distance,
-                    'location_status' => 'in_range',
-                    'status' => $isLate ? 'late' : 'present',
-                    'notes' => $month->isSameMonth(today())
-                        ? 'Seeded attendance for current month'
-                        : 'Seeded attendance for last month',
-                ]);
+                Attendance::updateOrCreate(
+                    [
+                        'user_id' => $user->id,
+                        'date' => $date->toDateString(),
+                    ],
+                    [
+                        'clock_in' => sprintf('%02d:%02d:00', $clockInH, $clockInM),
+                        'clock_out' => sprintf('%02d:%02d:00', $clockOutH, $clockOutM),
+                        'clock_in_latitude' => -3.21948078 + ((($workdayIndex % 9) - 4) / 100000),
+                        'clock_in_longitude' => 104.65116482 + ((($user->id % 9) - 4) / 100000),
+                        'distance_meters' => $distance,
+                        'location_status' => 'in_range',
+                        'status' => $isLate ? 'late' : 'present',
+                        'notes' => $month->isSameMonth(today())
+                            ? 'Seeded attendance for current month'
+                            : 'Seeded attendance for last month',
+                    ]
+                );
             }
         }
     }
@@ -243,18 +266,60 @@ class DatabaseSeeder extends Seeder
             $clockInM = $isLate ? 12 + ($index % 20) : 4 + ($index % 35);
             $distance = 15 + (($index * 9) % 70);
 
-            Attendance::create([
-                'user_id' => $user->id,
-                'date' => $today->toDateString(),
-                'clock_in' => sprintf('%02d:%02d:00', $clockInH, $clockInM),
-                'clock_out' => null,
-                'clock_in_latitude' => -3.21948078 + ((($index % 7) - 3) / 100000),
-                'clock_in_longitude' => 104.65116482 + ((($index % 5) - 2) / 100000),
-                'distance_meters' => $distance,
-                'location_status' => 'in_range',
-                'status' => $isLate ? 'late' : 'present',
-                'notes' => 'Seeded clock-in for today; clock-out is still pending.',
-            ]);
+            Attendance::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'date' => $today->toDateString(),
+                ],
+                [
+                    'clock_in' => sprintf('%02d:%02d:00', $clockInH, $clockInM),
+                    'clock_out' => null,
+                    'clock_in_latitude' => -3.21948078 + ((($index % 7) - 3) / 100000),
+                    'clock_in_longitude' => 104.65116482 + ((($index % 5) - 2) / 100000),
+                    'distance_meters' => $distance,
+                    'location_status' => 'in_range',
+                    'status' => $isLate ? 'late' : 'present',
+                    'notes' => 'Seeded clock-in for today; clock-out is still pending.',
+                ]
+            );
+        }
+    }
+
+    private function seedPayrolls(array $users): void
+    {
+        $payrollPeriods = [
+            Carbon::now()->subMonthsNoOverflow(2),
+            Carbon::now()->subMonthNoOverflow(),
+        ];
+
+        foreach ($users as $index => $user) {
+            $position = $user->salaryPosition;
+
+            if (!$position) {
+                continue;
+            }
+
+            foreach ($payrollPeriods as $periodIndex => $period) {
+                $alpha = ($index + $periodIndex) % 3;
+                $deductionPerAlpha = (int) round($position->base_salary * 0.045);
+                $deduction = $alpha * $deductionPerAlpha;
+
+                Payroll::updateOrCreate(
+                    [
+                        'employee_id' => $user->id,
+                        'month' => $period->month,
+                        'year' => $period->year,
+                    ],
+                    [
+                        'salary_position_id' => $position->id,
+                        'base_salary' => $position->base_salary,
+                        'alpha' => $alpha,
+                        'deduction' => $deduction,
+                        'total_salary' => max(0, $position->base_salary - $deduction),
+                        'status' => 'finalized',
+                    ]
+                );
+            }
         }
     }
 }

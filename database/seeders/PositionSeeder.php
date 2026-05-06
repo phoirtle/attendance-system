@@ -9,7 +9,7 @@ class PositionSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('salary_positions')->insert([
+        $positions = [
             [
                 'position_name' => 'Finance Staff',
                 'department'    => 'Finance',
@@ -52,6 +52,16 @@ class PositionSeeder extends Seeder
                 'created_at'    => now(),
                 'updated_at'    => now(),
             ],
-        ]);
+        ];
+
+        foreach ($positions as $position) {
+            DB::table('salary_positions')->updateOrInsert(
+                [
+                    'position_name' => $position['position_name'],
+                    'department'    => $position['department'],
+                ],
+                $position
+            );
+        }
     }
 }
