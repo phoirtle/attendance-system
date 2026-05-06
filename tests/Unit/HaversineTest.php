@@ -47,10 +47,10 @@ class HaversineTest extends TestCase
 
     public function test_palembang_to_jakarta_is_correct_magnitude(): void
     {
-        // Palembang to Jakarta ~800km
+        // Palembang to Jakarta is roughly 425 km as the crow flies.
         $dist = $this->haversine(-2.9761, 104.7754, -6.2088, 106.8456);
-        $this->assertGreaterThan(700000, $dist);   // > 700 km
-        $this->assertLessThan(900000, $dist);      // < 900 km
+        $this->assertGreaterThan(400000, $dist);
+        $this->assertLessThan(500000, $dist);
     }
 
     public function test_result_is_in_meters(): void

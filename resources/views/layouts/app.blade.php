@@ -12,27 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        rose:    { DEFAULT: '#E86975', dark: '#BE0822', light: '#EFAAB0' },
-                        blush:   { DEFAULT: '#FD9898', light: '#EFAAB0' },
-                        cream:   { DEFAULT: '#EED7C8' },
-                        ivory:   { DEFAULT: '#FFF9F5' },
-                        ruby:    { DEFAULT: '#BE0822' },
-                    },
-                    fontFamily: {
-                        sans:    ['"DM Sans"', 'ui-sans-serif', 'system-ui'],
-                        display: ['"Playfair Display"', 'Georgia', 'serif'],
-                    },
-                    backdropBlur: { xs: '2px' },
-                }
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
     <style>
         *, *::before, *::after { box-sizing: border-box; }

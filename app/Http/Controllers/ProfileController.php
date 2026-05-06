@@ -60,19 +60,12 @@ class ProfileController extends Controller
 
     public function editDetails()
     {
-        $user = Auth::user();
-        if ($user->isUser()) {
-            return redirect()->route('profile.show')->with('error', 'Only admin can edit personal details.');
-        }
         return view('profile.details', ['user' => Auth::user()]);
     }
 
     public function updateDetails(Request $request)
     {
         $user = Auth::user();
-        if ($user->isUser()) {
-            return back()->with('error', 'Only admin can edit personal details.');
-        }
 
         $request->validate([
             'name'       => ['required', 'string', 'max:255'],
