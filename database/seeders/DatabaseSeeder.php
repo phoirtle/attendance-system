@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Attendance;
+use App\Models\Leave;
 use App\Models\Payroll;
 use App\Models\SalaryPosition;
 use App\Models\User;
@@ -18,86 +19,277 @@ class DatabaseSeeder extends Seeder
             PositionSeeder::class,
         ]);
 
+        $positions = SalaryPosition::all()
+            ->keyBy(fn (SalaryPosition $position) => $position->department . '|' . $position->position_name);
+
         User::updateOrCreate(
             ['email' => 'admin@gmail.com'],
             [
-                'name'       => 'Admin Heartstrings',
-                'password'   => Hash::make('password'),
-                'role'       => 'admin',
+                'name' => 'Admin Heartstrings',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
                 'department' => 'Management',
+                'phone' => '081234567800',
+                'address' => 'Jl. Management 1, Palembang',
+                'birth_date' => '1990-02-11',
+                'gender' => 'female',
+                'employee_id_number' => 'ADM-001',
+                'join_date' => '2023-01-01',
+                'employment_status' => 'permanent',
+                'salary_position_id' => $positions->get('Management|Manager')?->id,
             ]
         );
 
         $staff = [
-            ['Axkeisha Azura Alwaqar', 'axkeisha@gmail.com', 'Engineering', '081234567890', 'Jl. Engineering 123', '1995-03-15', 'female', 'EMP-001', '2024-01-01', 'permanent'],
-            ['Careena Putri', 'careena@gmail.com', 'Marketing', '081234567891', 'Jl. Marketing 456', '1996-07-22', 'female', 'EMP-002', '2024-01-15', 'permanent'],
-            ['Dea Amalia Rombon', 'dea@gmail.com', 'Finance', '081234567892', 'Jl. Finance 789', '1994-11-30', 'female', 'EMP-003', '2023-12-01', 'permanent'],
-            ['Arkan Syahputra', 'arkan@gmail.com', 'HR', '081234567893', 'Jl. HR 101', '1993-05-10', 'male', 'EMP-004', '2023-11-20', 'permanent'],
+            ['Axkeisha Azura Alwaqar', 'axkeisha@gmail.com', 'Engineering', 'Senior Staff', '081234567890', 'Jl. Engineering 123, Palembang', '1995-03-15', 'female', 'EMP-001', '2024-01-01', 'permanent'],
+            ['Careena Putri', 'careena@gmail.com', 'Marketing', 'Marketing Staff', '081234567891', 'Jl. Marketing 456, Palembang', '1996-07-22', 'female', 'EMP-002', '2024-01-15', 'permanent'],
+            ['Dea Amalia Rombon', 'dea@gmail.com', 'Finance', 'Finance Staff', '081234567892', 'Jl. Finance 789, Palembang', '1994-11-30', 'female', 'EMP-003', '2023-12-01', 'permanent'],
+            ['Arkan Syahputra', 'arkan@gmail.com', 'HR', 'HR Staff', '081234567893', 'Jl. HR 101, Palembang', '1993-05-10', 'male', 'EMP-004', '2023-11-20', 'permanent'],
+            ['Nadia Larasati', 'nadia@gmail.com', 'Engineering', 'Staff', '081234567894', 'Jl. Anggrek No. 12, Palembang', '1997-04-18', 'female', 'EMP-005', '2024-02-05', 'permanent'],
+            ['Rafi Pratama', 'rafi@gmail.com', 'Engineering', 'Staff', '081234567895', 'Jl. Demang Lebar Daun No. 8, Palembang', '1998-09-09', 'male', 'EMP-006', '2024-03-01', 'contract'],
+            ['Maya Salsabila', 'maya@gmail.com', 'Marketing', 'Marketing Staff', '081234567896', 'Jl. Rajawali No. 21, Palembang', '1996-12-24', 'female', 'EMP-007', '2023-10-16', 'permanent'],
+            ['Dimas Pradana', 'dimas@gmail.com', 'Finance', 'Finance Staff', '081234567897', 'Jl. Veteran No. 33, Palembang', '1992-06-03', 'male', 'EMP-008', '2022-08-22', 'permanent'],
+            ['Sinta Maharani', 'sinta@gmail.com', 'HR', 'HR Staff', '081234567898', 'Jl. Basuki Rahmat No. 17, Palembang', '1995-01-27', 'female', 'EMP-009', '2023-05-08', 'permanent'],
+            ['Bima Erlangga', 'bima@gmail.com', 'Management', 'Manager', '081234567899', 'Jl. Kol. H. Burlian No. 40, Palembang', '1989-10-14', 'male', 'EMP-010', '2021-07-12', 'permanent'],
         ];
 
-        $positions = SalaryPosition::all()->keyBy('department');
         $users = [];
 
-        foreach ($staff as [$name, $email, $dept, $phone, $address, $birthDate, $gender, $nik, $joinDate, $status]) {
+        foreach ($staff as [$name, $email, $department, $positionName, $phone, $address, $birthDate, $gender, $employeeNumber, $joinDate, $employmentStatus]) {
             $users[] = User::updateOrCreate(
                 ['email' => $email],
                 [
-                    'name'               => $name,
-                    'password'           => Hash::make('password'),
-                    'role'               => 'user',
-                    'department'         => $dept,
-                    'salary_position_id' => $positions->get($dept)?->id,
-                    'phone'              => $phone,
-                    'address'            => $address,
-                    'birth_date'         => $birthDate,
-                    'gender'             => $gender,
-                    'employee_id_number' => $nik,
-                    'join_date'          => $joinDate,
-                    'employment_status'  => $status,
+                    'name' => $name,
+                    'password' => Hash::make('password'),
+                    'role' => 'user',
+                    'department' => $department,
+                    'phone' => $phone,
+                    'address' => $address,
+                    'birth_date' => $birthDate,
+                    'gender' => $gender,
+                    'employee_id_number' => $employeeNumber,
+                    'join_date' => $joinDate,
+                    'employment_status' => $employmentStatus,
+                    'salary_position_id' => $positions->get($department . '|' . $positionName)?->id,
                 ]
             );
         }
 
+        $lastMonth = Carbon::today()->subMonthNoOverflow();
+        $currentMonth = Carbon::today();
+
+        $this->seedApprovedLeaves($users, $lastMonth);
+        $this->seedCurrentMonthLeaves($users, $currentMonth);
+        $this->seedAttendancesForMonth($users, $lastMonth);
+        $this->seedAttendancesForMonth($users, $currentMonth, Carbon::yesterday());
+        $this->seedTodayClockIns($users);
+        $this->seedPayrolls($users);
+
+        $this->command->info('Seeded admin + 10 staff users with complete profiles, attendance history, today clock-ins, and payroll data.');
+        $this->command->info('Admin login : admin@gmail.com / password');
+        $this->command->info('User login  : dea@gmail.com / password');
+    }
+
+    private function seedApprovedLeaves(array $users, Carbon $lastMonth): void
+    {
+        $approvedLeaves = [
+            'EMP-002' => ['type' => 'annual', 'start' => $lastMonth->copy()->startOfMonth()->addWeekdays(7), 'days' => 2, 'reason' => 'Family event'],
+            'EMP-006' => ['type' => 'sick', 'start' => $lastMonth->copy()->startOfMonth()->addWeekdays(12), 'days' => 1, 'reason' => 'Medical rest'],
+            'EMP-009' => ['type' => 'permission', 'start' => $lastMonth->copy()->startOfMonth()->addWeekdays(15), 'days' => 1, 'reason' => 'Personal permit'],
+        ];
+
         foreach ($users as $user) {
-            for ($i = 30; $i >= 1; $i--) {
-                $date = Carbon::today()->subDays($i);
+            $leaveConfig = $approvedLeaves[$user->employee_id_number] ?? null;
+
+            if (!$leaveConfig) {
+                continue;
+            }
+
+            $start = $leaveConfig['start']->copy();
+            $end = $start->copy()->addWeekdays($leaveConfig['days'] - 1);
+
+            Leave::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'start_date' => $start->toDateString(),
+                    'end_date' => $end->toDateString(),
+                    'type' => $leaveConfig['type'],
+                ],
+                [
+                    'reason' => $leaveConfig['reason'],
+                    'status' => 'approved',
+                    'admin_note' => 'Seeded approved leave for demo data.',
+                ]
+            );
+        }
+    }
+
+    private function seedCurrentMonthLeaves(array $users, Carbon $currentMonth): void
+    {
+        if (Carbon::yesterday()->lessThan($currentMonth->copy()->startOfMonth())) {
+            return;
+        }
+
+        $approvedLeaves = [
+            'EMP-005' => ['type' => 'annual', 'day' => 1, 'reason' => 'Early month personal leave'],
+            'EMP-008' => ['type' => 'permission', 'day' => 3, 'reason' => 'Bank administration permit'],
+        ];
+
+        $workdays = $this->elapsedWorkdays($currentMonth, Carbon::yesterday());
+
+        foreach ($users as $user) {
+            $leaveConfig = $approvedLeaves[$user->employee_id_number] ?? null;
+
+            if (!$leaveConfig || !isset($workdays[$leaveConfig['day'] - 1])) {
+                continue;
+            }
+
+            $date = $workdays[$leaveConfig['day'] - 1]->copy();
+
+            Leave::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'start_date' => $date->toDateString(),
+                    'end_date' => $date->toDateString(),
+                    'type' => $leaveConfig['type'],
+                ],
+                [
+                    'reason' => $leaveConfig['reason'],
+                    'status' => 'approved',
+                    'admin_note' => 'Seeded approved leave for current month demo data.',
+                ]
+            );
+        }
+    }
+
+    private function seedAttendancesForMonth(array $users, Carbon $month, ?Carbon $until = null): void
+    {
+        foreach ($users as $user) {
+            $cursor = $month->copy()->startOfMonth();
+            $endOfMonth = $until
+                ? $until->copy()->min($month->copy()->endOfMonth())
+                : $month->copy()->endOfMonth();
+            $workdayIndex = 0;
+
+            while ($cursor->lte($endOfMonth)) {
+                $date = $cursor->copy();
+                $cursor->addDay();
 
                 if ($date->isWeekend()) {
                     continue;
                 }
 
-                if (rand(1, 10) > 8) {
+                $workdayIndex++;
+                $isLeave = $user->hasApprovedLeaveForDate($date);
+                $isAlpha = !$isLeave && $workdayIndex > 3 && (($workdayIndex + $user->id) % 13 === 0);
+                $isLate = !$isLeave && !$isAlpha && (($workdayIndex + $user->id) % 5 === 0);
+
+                if ($isLeave || $isAlpha) {
+                    Attendance::updateOrCreate(
+                        [
+                            'user_id' => $user->id,
+                            'date' => $date->toDateString(),
+                        ],
+                        [
+                            'clock_in' => null,
+                            'clock_out' => null,
+                            'clock_in_latitude' => null,
+                            'clock_in_longitude' => null,
+                            'distance_meters' => null,
+                            'location_status' => $isLeave ? 'in_range' : 'out_of_range',
+                            'status' => $isLeave ? 'leave' : 'alpha',
+                            'notes' => $isLeave ? 'Approved leave' : 'Seeded alpha record',
+                        ]
+                    );
+
                     continue;
                 }
 
-                $isLate = rand(1, 10) > 7;
-                $clockInH = $isLate ? rand(9, 10) : 8;
-                $clockInM = rand(0, 59);
-                $clockOutH = rand(17, 18);
-                $clockOutM = rand(0, 59);
-                $distance = rand(5, 95);
+                $clockInH = $isLate ? 9 : 8;
+                $clockInM = $isLate
+                    ? 10 + (($workdayIndex + $user->id) % 35)
+                    : 5 + (($workdayIndex + $user->id) % 40);
+                $clockOutH = 17 + (($workdayIndex + $user->id) % 2);
+                $clockOutM = 5 + (($workdayIndex * 3 + $user->id) % 50);
+                $distance = 12 + (($workdayIndex * 7 + $user->id) % 80);
 
                 Attendance::updateOrCreate(
                     [
                         'user_id' => $user->id,
-                        'date'    => $date->toDateString(),
+                        'date' => $date->toDateString(),
                     ],
                     [
-                        'clock_in'           => sprintf('%02d:%02d:00', $clockInH, $clockInM),
-                        'clock_out'          => sprintf('%02d:%02d:00', $clockOutH, $clockOutM),
-                        'clock_in_latitude'  => -3.21948078 + (rand(-50, 50) / 100000),
-                        'clock_in_longitude' => 104.65116482 + (rand(-50, 50) / 100000),
-                        'distance_meters'    => $distance,
-                        'location_status'    => 'in_range',
-                        'status'             => $isLate ? 'late' : 'present',
+                        'clock_in' => sprintf('%02d:%02d:00', $clockInH, $clockInM),
+                        'clock_out' => sprintf('%02d:%02d:00', $clockOutH, $clockOutM),
+                        'clock_in_latitude' => -3.21948078 + ((($workdayIndex % 9) - 4) / 100000),
+                        'clock_in_longitude' => 104.65116482 + ((($user->id % 9) - 4) / 100000),
+                        'distance_meters' => $distance,
+                        'location_status' => 'in_range',
+                        'status' => $isLate ? 'late' : 'present',
+                        'notes' => $month->isSameMonth(today())
+                            ? 'Seeded attendance for current month'
+                            : 'Seeded attendance for last month',
                     ]
                 );
             }
         }
+    }
 
+    private function elapsedWorkdays(Carbon $month, Carbon $until): array
+    {
+        $workdays = [];
+        $cursor = $month->copy()->startOfMonth();
+        $end = $until->copy()->min($month->copy()->endOfMonth());
+
+        while ($cursor->lte($end)) {
+            if ($cursor->isWeekday()) {
+                $workdays[] = $cursor->copy();
+            }
+
+            $cursor->addDay();
+        }
+
+        return $workdays;
+    }
+
+    private function seedTodayClockIns(array $users): void
+    {
+        $today = Carbon::today();
+
+        if ($today->isWeekend()) {
+            return;
+        }
+
+        foreach ($users as $index => $user) {
+            $isLate = $index % 4 === 0;
+            $clockInH = $isLate ? 9 : 8;
+            $clockInM = $isLate ? 12 + ($index % 20) : 4 + ($index % 35);
+            $distance = 15 + (($index * 9) % 70);
+
+            Attendance::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'date' => $today->toDateString(),
+                ],
+                [
+                    'clock_in' => sprintf('%02d:%02d:00', $clockInH, $clockInM),
+                    'clock_out' => null,
+                    'clock_in_latitude' => -3.21948078 + ((($index % 7) - 3) / 100000),
+                    'clock_in_longitude' => 104.65116482 + ((($index % 5) - 2) / 100000),
+                    'distance_meters' => $distance,
+                    'location_status' => 'in_range',
+                    'status' => $isLate ? 'late' : 'present',
+                    'notes' => 'Seeded clock-in for today; clock-out is still pending.',
+                ]
+            );
+        }
+    }
+
+    private function seedPayrolls(array $users): void
+    {
         $payrollPeriods = [
-            Carbon::now()->subMonths(2),
-            Carbon::now()->subMonth(),
+            Carbon::now()->subMonthsNoOverflow(2),
+            Carbon::now()->subMonthNoOverflow(),
         ];
 
         foreach ($users as $index => $user) {
@@ -115,24 +307,19 @@ class DatabaseSeeder extends Seeder
                 Payroll::updateOrCreate(
                     [
                         'employee_id' => $user->id,
-                        'month'       => $period->month,
-                        'year'        => $period->year,
+                        'month' => $period->month,
+                        'year' => $period->year,
                     ],
                     [
                         'salary_position_id' => $position->id,
-                        'base_salary'        => $position->base_salary,
-                        'alpha'              => $alpha,
-                        'deduction'          => $deduction,
-                        'total_salary'       => max(0, $position->base_salary - $deduction),
-                        'status'             => 'finalized',
+                        'base_salary' => $position->base_salary,
+                        'alpha' => $alpha,
+                        'deduction' => $deduction,
+                        'total_salary' => max(0, $position->base_salary - $deduction),
+                        'status' => 'finalized',
                     ]
                 );
             }
         }
-
-        $this->command->info('Seeded admin + 4 staff users with 30-day attendance history.');
-        $this->command->info('Seeded My Salary payroll data for all 4 staff users.');
-        $this->command->info('Admin login : admin@gmail.com / password');
-        $this->command->info('User login  : dea@gmail.com / password');
     }
 }
