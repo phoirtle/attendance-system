@@ -23,7 +23,7 @@
 
     <div class="glass-strong panel fade-in delay-2" style="background:rgba(255,249,245,0.60);padding:0;overflow:hidden;">
         <div style="overflow-x:auto;">
-            <table class="data-table" style="min-width:600px;">
+            <table class="data-table" style="min-width:760px;">
                 <thead><tr>
                     <th style="padding-left:24px;">Name</th>
                     <th>Email</th>
@@ -32,12 +32,7 @@
                 </tr></thead>
                 <tbody>
                 @forelse($users as $u)
-                <tr
-                    class="staff-row"
-                    data-id="{{ $u->id }}"
-                    style="cursor:pointer;"
-                    title="Click to view details"
-                >
+                <tr class="staff-row" data-id="{{ $u->id }}">
                     <td style="padding-left:24px;font-weight:600;">
                         <div style="display:flex;align-items:center;gap:10px;">
                             @if($u->photo_path)
@@ -52,13 +47,16 @@
                     </td>
                     <td>{{ $u->email }}</td>
                     <td>{{ $u->department ?? '—' }}</td>
-                    <td style="padding-right:24px;text-align:right;" onclick="event.stopPropagation();">
-                        <a href="{{ route('admin.users.edit', $u) }}" class="btn-outline" style="text-decoration:none;padding:6px 14px;font-size:0.78rem;border-radius:8px;margin-right:6px;">Edit</a>
+                    <td style="padding-right:24px;">
+                        <div style="display:flex;justify-content:flex-end;gap:8px;white-space:nowrap;">
+                        <button type="button" class="btn-outline" onclick="openPanel({{ $u->id }}, this.closest('tr'))" style="padding:6px 14px;font-size:0.78rem;border-radius:8px;">Detail</button>
+                        <a href="{{ route('admin.users.edit', $u) }}" class="btn-outline" style="text-decoration:none;padding:6px 14px;font-size:0.78rem;border-radius:8px;">Edit</a>
                         <form method="POST" action="{{ route('admin.users.destroy', $u) }}" style="display:inline;" onsubmit="return confirm('Delete this employee?');">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn-outline" style="padding:6px 14px;font-size:0.78rem;border-radius:8px;color:#BE0822;border-color:rgba(190,8,34,0.35);">Delete</button>
                         </form>
+                        </div>
                     </td>
                 </tr>
                 @empty
@@ -71,7 +69,7 @@
 </div>
 
 {{-- ═══════════════════════════════════════════
-     SLIDE-IN DETAIL PANEL (dari kanan)
+     EMPLOYEE DETAIL MODAL
 ════════════════════════════════════════════ --}}
 
 {{-- Overlay --}}
@@ -79,20 +77,25 @@
     display:none;
     position:fixed;inset:0;
     background:rgba(61,26,34,0.35);
-    backdrop-filter:blur(2px);
+    backdrop-filter:blur(4px);
     z-index:900;
     transition:opacity 0.25s;
 "></div>
 
-{{-- Panel --}}
+{{-- Modal --}}
 <div id="staffPanel" style="
-    position:fixed;top:0;right:0;bottom:0;
-    width:min(420px, 100vw);
+    position:fixed;top:calc(50% + 36px);left:50%;
+    width:min(620px, calc(100vw - 32px));
+    max-height:calc(100vh - 124px);
     background:#fff9f5;
-    box-shadow:-8px 0 40px rgba(61,26,34,0.18);
+    border:1px solid rgba(255,255,255,0.65);
+    border-radius:24px;
+    box-shadow:0 24px 80px rgba(61,26,34,0.24);
     z-index:901;
-    transform:translateX(100%);
-    transition:transform 0.3s cubic-bezier(.4,0,.2,1);
+    transform:translate(-50%, -50%) scale(0.96);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.2s ease, transform 0.2s ease;
     display:flex;flex-direction:column;
     overflow:hidden;
 ">
@@ -191,13 +194,6 @@ const STAFF_DATA = @json($staffData);
 let activeRow = null;
 
 // Klik baris → buka panel
-document.querySelectorAll('.staff-row').forEach(row => {
-    row.addEventListener('click', function () {
-        const id = parseInt(this.dataset.id);
-        openPanel(id, this);
-    });
-});
-
 function openPanel(id, row) {
     // Highlight baris aktif
     if (activeRow) activeRow.classList.remove('active');
@@ -208,7 +204,9 @@ function openPanel(id, row) {
     const overlay = document.getElementById('staffOverlay');
     const panel   = document.getElementById('staffPanel');
     overlay.style.display = 'block';
-    panel.style.transform = 'translateX(0)';
+    panel.style.opacity = '1';
+    panel.style.pointerEvents = 'auto';
+    panel.style.transform = 'translate(-50%, -50%) scale(1)';
 
     // Render konten
     renderPanel(id);
@@ -216,7 +214,10 @@ function openPanel(id, row) {
 
 function closePanel() {
     document.getElementById('staffOverlay').style.display = 'none';
-    document.getElementById('staffPanel').style.transform = 'translateX(100%)';
+    const panel = document.getElementById('staffPanel');
+    panel.style.opacity = '0';
+    panel.style.pointerEvents = 'none';
+    panel.style.transform = 'translate(-50%, -50%) scale(0.96)';
     document.getElementById('staffPanelFooter').style.display = 'none';
     if (activeRow) { activeRow.classList.remove('active'); activeRow = null; }
 }
